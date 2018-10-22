@@ -10,11 +10,11 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/vwxyzjn/portwarden"
 )
 
 const (
+	BackupFolderName = "./portwarden_backup/"
 	ErrVaultIsLocked = "Vault is locked."
 )
 
@@ -27,7 +27,10 @@ func main() {
 	if err := json.Unmarshal(rawByte, &test); err != nil {
 		panic(err)
 	}
-	spew.Dump(test[:5])
+	err := BWGetAllAttachments(BackupFolderName, sessionKey, test[:5])
+	if err != nil {
+		panic(err)
+	}
 }
 
 func extractSessionKey(stdout string) string {
@@ -69,4 +72,28 @@ func BWListItemsRawBytes(sessionKey string) []byte {
 		panic(err)
 	}
 	return stdout.Bytes()
+}
+
+func BWGetAttachment(outputDir, itemID, attachmentID, sessionKey string) error {
+	cmd := exec.Command("bw", "get", "attachment", attachmentID, "--itemid", itemID,
+		"--session", sessionKey, "--output", outputDir)
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func BWGetAllAttachments(outputDir, sessionKey string, pws []portwarden.PortWardenElement) error {
+	for _, item := range pws {
+		if len(item.Attachments) > 0 {
+			for _, innerItem := range item.Attachments {
+				err := BWGetAttachment(outputDir, item.ID, innerItem.ID, sessionKey)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
 }
