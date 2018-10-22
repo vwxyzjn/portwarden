@@ -1,8 +1,8 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"regexp"
@@ -19,29 +19,19 @@ func main() {
 	test := &portwarden.PortWardenElement{}
 	fmt.Println(test)
 
-	realStdout := os.Stdout
-	r, w, err := os.Pipe()
-	if err != nil {
-		panic(err)
-	}
-	os.Stdout = w
+	var stdout, stderr bytes.Buffer
 
+	fmt.Println("Please enter your master password: (input is hidden)")
 	cmd := exec.Command("bw", "unlock")
-	cmd.Stdout = os.Stdout
 	cmd.Stdin = os.Stdin
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err := cmd.Run()
 	if err != nil {
 		panic(err)
 	}
-	w.Close()
 
-	out, err := ioutil.ReadAll(r)
-	if err != nil {
-		panic(err)
-	}
-	os.Stdout = realStdout
-	fmt.Println(extractSessionKey(string(out)))
+	fmt.Println(extractSessionKey(string(stdout.Bytes())))
 }
 
 func extractSessionKey(stdout string) string {
