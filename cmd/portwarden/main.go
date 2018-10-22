@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
@@ -9,6 +10,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/mholt/archiver"
 	"github.com/tidwall/pretty"
 	"github.com/vwxyzjn/portwarden"
 )
@@ -16,9 +18,12 @@ import (
 const (
 	BackupFolderName = "./portwarden_backup/"
 	ErrVaultIsLocked = "Vault is locked."
+	Salt             = `,(@0vd<)D6c3:5jI;4BZ(#Gx2IZ6B>`
 )
 
 func main() {
+	fileName := "output.portwarden"
+
 	pwes := []portwarden.PortWardenElement{}
 	sessionKey := BWUnlockVaultToGetSessionKey()
 
@@ -34,6 +39,24 @@ func main() {
 
 	err := BWGetAllAttachments(BackupFolderName, sessionKey, pwes[:5])
 	if err != nil {
+		panic(err)
+	}
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+	err = archiver.Zip.Write(writer, []string{BackupFolderName})
+	if err != nil {
+		panic(err)
+	}
+
+	// derive a key from the master password
+	portwarden.EncryptFile(fileName, b.Bytes(), "123")
+
+}
+
+func decryptBackup(fileName, passphrase string) {
+	tb := portwarden.DecryptFile(fileName, "123")
+	if err := ioutil.WriteFile("test.zip", tb, 0644); err != nil {
 		panic(err)
 	}
 }

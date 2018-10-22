@@ -3,13 +3,64 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/dsnet/compress"
+  packages = [
+    ".",
+    "bzip2",
+    "bzip2/internal/sais",
+    "internal",
+    "internal/errors",
+    "internal/prefix"
+  ]
+  revision = "cc9eb1d7ad760af14e8f918698f745e80377af4f"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/golang/snappy"
+  packages = ["."]
+  revision = "2e65f85255dbc3072edf28d6b5b8efc472979f5a"
+
+[[projects]]
+  name = "github.com/mholt/archiver"
+  packages = ["."]
+  revision = "de0d89e255e17c8d75a40122055763e743ab0593"
+  version = "v2.1"
+
+[[projects]]
+  name = "github.com/nwaples/rardecode"
+  packages = ["."]
+  revision = "cc3e4b2381762c56dbcdf9f93be03349a1dc1c14"
+  version = "v1.0.0"
+
+[[projects]]
+  name = "github.com/pierrec/lz4"
+  packages = [
+    ".",
+    "internal/xxh32"
+  ]
+  revision = "635575b42742856941dbc767b44905bb9ba083f6"
+  version = "v2.0.7"
+
+[[projects]]
+  branch = "master"
   name = "github.com/tidwall/pretty"
   packages = ["."]
   revision = "65a9db5fad5105a89e17f38adcc9878685be6d78"
 
+[[projects]]
+  name = "github.com/ulikunitz/xz"
+  packages = [
+    ".",
+    "internal/hash",
+    "internal/xlog",
+    "lzma"
+  ]
+  revision = "0c6b41e72360850ca4f98dc341fd999726ea007f"
+  version = "v0.5.4"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "72f51a9b783ee8073ed9cfcb350fb65d9f427209ac0dd141ca387703aec6df42"
+  inputs-digest = "1be17586891e74f78263d0ca60de71187836205b08931812201056f741ee7316"
   solver-name = "gps-cdcl"
   solver-version = 1
