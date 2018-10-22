@@ -3,13 +3,13 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"regexp"
 	"strings"
 
+	"github.com/tidwall/pretty"
 	"github.com/vwxyzjn/portwarden"
 )
 
@@ -19,15 +19,20 @@ const (
 )
 
 func main() {
-	test := []portwarden.PortWardenElement{}
-	fmt.Println(test)
-
+	pwes := []portwarden.PortWardenElement{}
 	sessionKey := BWUnlockVaultToGetSessionKey()
+
+	// save formmated json to "main.json"
 	rawByte := BWListItemsRawBytes(sessionKey)
-	if err := json.Unmarshal(rawByte, &test); err != nil {
+	if err := json.Unmarshal(rawByte, &pwes); err != nil {
 		panic(err)
 	}
-	err := BWGetAllAttachments(BackupFolderName, sessionKey, test[:5])
+	formattedByte := pretty.Pretty(rawByte)
+	if err := ioutil.WriteFile(BackupFolderName+"main.json", formattedByte, 0644); err != nil {
+		panic(err)
+	}
+
+	err := BWGetAllAttachments(BackupFolderName, sessionKey, pwes[:5])
 	if err != nil {
 		panic(err)
 	}
@@ -88,7 +93,7 @@ func BWGetAllAttachments(outputDir, sessionKey string, pws []portwarden.PortWard
 	for _, item := range pws {
 		if len(item.Attachments) > 0 {
 			for _, innerItem := range item.Attachments {
-				err := BWGetAttachment(outputDir, item.ID, innerItem.ID, sessionKey)
+				err := BWGetAttachment(outputDir+item.Name+"/", item.ID, innerItem.ID, sessionKey)
 				if err != nil {
 					return err
 				}
