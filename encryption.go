@@ -23,46 +23,51 @@ func deriveKey(passphrase string) []byte {
 	return pbkdf2.Key([]byte(passphrase), []byte(Salt), 4096, 32, sha256.New)
 }
 
-func encrypt(data []byte, passphrase string) []byte {
+func encrypt(data []byte, passphrase string) ([]byte, error) {
 	block, _ := aes.NewCipher(deriveKey(passphrase))
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
-		panic(err.Error())
+		return []byte{}, err
 	}
 	nonce := make([]byte, gcm.NonceSize())
 	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		panic(err.Error())
+		return []byte{}, err
 	}
 	ciphertext := gcm.Seal(nonce, nonce, data, nil)
-	return ciphertext
+	return ciphertext, nil
 }
 
-func decrypt(data []byte, passphrase string) []byte {
+func decrypt(data []byte, passphrase string) ([]byte, error) {
 	key := deriveKey(passphrase)
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		panic(err.Error())
+		return []byte{}, err
 	}
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
-		panic(err.Error())
+		return []byte{}, err
 	}
 	nonceSize := gcm.NonceSize()
 	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		panic(err.Error())
+		return []byte{}, err
 	}
-	return plaintext
+	return plaintext, nil
 }
 
-func EncryptFile(filename string, data []byte, passphrase string) {
+func EncryptFile(filename string, data []byte, passphrase string) error {
 	f, _ := os.Create(filename)
 	defer f.Close()
-	f.Write(encrypt(data, passphrase))
+	ciphertext, err := encrypt(data, passphrase)
+	if err != nil {
+		return err
+	}
+	f.Write(ciphertext)
+	return nil
 }
 
-func DecryptFile(filename string, passphrase string) []byte {
+func DecryptFile(filename string, passphrase string) ([]byte, error) {
 	data, _ := ioutil.ReadFile(filename)
 	return decrypt(data, passphrase)
 }

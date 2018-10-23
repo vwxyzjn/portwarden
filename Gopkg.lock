@@ -58,9 +58,21 @@
   revision = "0c6b41e72360850ca4f98dc341fd999726ea007f"
   version = "v0.5.4"
 
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/crypto"
+  packages = ["pbkdf2"]
+  revision = "0c41d7ab0a0ee717d4590a44bcb987dfd9e183eb"
+
+[[projects]]
+  name = "gopkg.in/urfave/cli.v1"
+  packages = ["."]
+  revision = "cfb38830724cc34fedffe9a2a29fb54fa9169cd1"
+  version = "v1.20.0"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1be17586891e74f78263d0ca60de71187836205b08931812201056f741ee7316"
+  inputs-digest = "6eb1f307c13da93fccf7290b4109a77266f01148d5a3335116ff742923e4801f"
   solver-name = "gps-cdcl"
   solver-version = 1

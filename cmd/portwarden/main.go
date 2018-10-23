@@ -4,25 +4,87 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/mholt/archiver"
 	"github.com/tidwall/pretty"
 	"github.com/vwxyzjn/portwarden"
+	cli "gopkg.in/urfave/cli.v1"
 )
 
 const (
-	BackupFolderName = "./portwarden_backup/"
-	ErrVaultIsLocked = "Vault is locked."
-	Salt             = `,(@0vd<)D6c3:5jI;4BZ(#Gx2IZ6B>`
+	BackupFolderName         = "./portwarden_backup/"
+	ErrVaultIsLocked         = "vault is locked"
+	ErrNoPhassPhraseProvided = "no passphrase provided"
+	Salt                     = `,(@0vd<)D6c3:5jI;4BZ(#Gx2IZ6B>`
 )
 
 func main() {
-	fileName := "output.portwarden"
+	var passphrase string
+	var filename string
+	app := cli.NewApp()
+
+	app.Flags = []cli.Flag{
+		cli.StringFlag{
+			Name:        "passphrase",
+			Usage:       "The passphrase that is used to encrypt/decrypt export of Bitwarden Vault",
+			Destination: &passphrase,
+		},
+		cli.StringFlag{
+			Name:        "filename",
+			Usage:       "The name of the file you wish to export or decrypt",
+			Destination: &filename,
+		},
+	}
+
+	app.Commands = []cli.Command{
+		{
+			Name:    "encrypt",
+			Aliases: []string{"e"},
+			Usage:   "Export the Bitwarden Vault with encryption to a `.portwarden` file",
+			Action: func(c *cli.Context) error {
+				if len(passphrase) == 0 {
+					return errors.New(ErrNoPhassPhraseProvided)
+				}
+				encryptBackup(filename, passphrase)
+				return nil
+			},
+		},
+		{
+			Name:    "decrypt",
+			Aliases: []string{"d"},
+			Usage:   "Decrypt a `.portwarden` file",
+			Action: func(c *cli.Context) error {
+				if len(passphrase) == 0 {
+					return errors.New(ErrNoPhassPhraseProvided)
+				}
+				decryptBackup(filename, passphrase)
+				return nil
+			},
+		},
+	}
+
+	sort.Sort(cli.FlagsByName(app.Flags))
+	sort.Sort(cli.CommandsByName(app.Commands))
+
+	err := app.Run(os.Args)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+}
+
+func encryptBackup(fileName, passphrase string) {
+	if !strings.HasSuffix(fileName, ".portwarden") {
+		fileName += ".portwarden"
+	}
 
 	pwes := []portwarden.PortWardenElement{}
 	sessionKey := BWUnlockVaultToGetSessionKey()
@@ -32,13 +94,12 @@ func main() {
 	if err := json.Unmarshal(rawByte, &pwes); err != nil {
 		panic(err)
 	}
-	formattedByte := pretty.Pretty(rawByte)
-	if err := ioutil.WriteFile(BackupFolderName+"main.json", formattedByte, 0644); err != nil {
-		panic(err)
-	}
-
 	err := BWGetAllAttachments(BackupFolderName, sessionKey, pwes[:5])
 	if err != nil {
+		panic(err)
+	}
+	formattedByte := pretty.Pretty(rawByte)
+	if err := ioutil.WriteFile(BackupFolderName+"main.json", formattedByte, 0644); err != nil {
 		panic(err)
 	}
 
@@ -50,13 +111,24 @@ func main() {
 	}
 
 	// derive a key from the master password
-	portwarden.EncryptFile(fileName, b.Bytes(), "123")
+	err = portwarden.EncryptFile(fileName, b.Bytes(), passphrase)
+	if err != nil {
+		panic(err)
+	}
 
+	// cleanup: delete temporary files
+	err = os.RemoveAll(BackupFolderName)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func decryptBackup(fileName, passphrase string) {
-	tb := portwarden.DecryptFile(fileName, "123")
-	if err := ioutil.WriteFile("test.zip", tb, 0644); err != nil {
+	tb, err := portwarden.DecryptFile(fileName, passphrase)
+	if err != nil {
+		panic(err)
+	}
+	if err := ioutil.WriteFile(fileName+"decrypted"+".zip", tb, 0644); err != nil {
 		panic(err)
 	}
 }
