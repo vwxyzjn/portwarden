@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -13,6 +14,7 @@ import (
 	"sort"
 	"strings"
 
+	capturer "github.com/kami-zh/go-capturer"
 	"github.com/mholt/archiver"
 	"github.com/tidwall/pretty"
 	"github.com/vwxyzjn/portwarden"
@@ -23,7 +25,10 @@ const (
 	BackupFolderName         = "./portwarden_backup/"
 	ErrVaultIsLocked         = "vault is locked"
 	ErrNoPhassPhraseProvided = "no passphrase provided"
-	Salt                     = `,(@0vd<)D6c3:5jI;4BZ(#Gx2IZ6B>`
+	ErrNoFilenameProvided    = "no filename provided"
+
+	BWErrNotLoggedIn = "You are not logged in."
+	Salt             = `,(@0vd<)D6c3:5jI;4BZ(#Gx2IZ6B>`
 )
 
 func main() {
@@ -65,6 +70,9 @@ func main() {
 				if len(passphrase) == 0 {
 					return errors.New(ErrNoPhassPhraseProvided)
 				}
+				if len(filename) == 0 {
+					return errors.New(ErrNoFilenameProvided)
+				}
 				decryptBackup(filename, passphrase)
 				return nil
 			},
@@ -87,7 +95,7 @@ func encryptBackup(fileName, passphrase string) {
 	}
 
 	pwes := []portwarden.PortWardenElement{}
-	sessionKey := BWUnlockVaultToGetSessionKey()
+	sessionKey := BWGetSessionKey()
 
 	// save formmated json to "main.json"
 	rawByte := BWListItemsRawBytes(sessionKey)
@@ -128,7 +136,7 @@ func decryptBackup(fileName, passphrase string) {
 	if err != nil {
 		panic(err)
 	}
-	if err := ioutil.WriteFile(fileName+"decrypted"+".zip", tb, 0644); err != nil {
+	if err := ioutil.WriteFile(fileName+".decrypted"+".zip", tb, 0644); err != nil {
 		panic(err)
 	}
 }
@@ -141,24 +149,56 @@ func extractSessionKey(stdout string) string {
 	return sessionKey
 }
 
-func BWUnlockVaultToGetSessionKey() string {
-	rescueStdout := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	cmd := exec.Command("bw", "unlock")
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err := cmd.Run()
-
-	w.Close()
-	out, _ := ioutil.ReadAll(r)
+func BWGetSessionKey() string {
+	sessionKey, err := BWUnlockVaultToGetSessionKey()
 	if err != nil {
-		panic(err)
+		if err.Error() == BWErrNotLoggedIn {
+			fmt.Println("try login")
+			sessionKey, err = BWLoginGetSessionKey()
+			if err != nil {
+				panic(err)
+			}
+		} else {
+			panic(err)
+		}
 	}
-	os.Stdout = rescueStdout
-	return extractSessionKey(string(out))
+	return sessionKey
+}
+
+func BWUnlockVaultToGetSessionKey() (string, error) {
+	var err error
+	out := capturer.CaptureOutput(func() {
+		cmd := exec.Command("bw", "unlock")
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		err = cmd.Run()
+	})
+
+	if err != nil {
+		if string(out) == BWErrNotLoggedIn {
+			return "", errors.New(string(out))
+		} else {
+			return "", err
+		}
+	}
+
+	return extractSessionKey(string(out)), nil
+}
+
+func BWLoginGetSessionKey() (string, error) {
+	var err error
+	out := capturer.CaptureOutput(func() {
+		cmd := exec.Command("bw", "login")
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		err = cmd.Run()
+	})
+	if err != nil {
+		return "", err
+	}
+	return extractSessionKey(string(out)), nil
 }
 
 func BWListItemsRawBytes(sessionKey string) []byte {
