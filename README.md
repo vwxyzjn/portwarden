@@ -1,6 +1,9 @@
 # PortWarden
 
-This project aims to provide encrypted backups for (Bitwarden)[https://bitwarden.com/] vaults, including attachments. 
+This project provides encrypted backups for (Bitwarden)[https://bitwarden.com/] vaults, including attachments. It pulls your vault items from (Bitwarden CLI)[https://github.com/bitwarden/cli] and download all the attachments associated with those items to a temporary backup folder. Then, portwarden zip that folder, encrypt it, and delete the temporary folder. 
+
+
+It addresses this issue in the community forum https://community.bitwarden.com/t/encrypted-export/235, but hopefully Bitwarden will come up with official solutions soon.
 
 ## Usage
 
