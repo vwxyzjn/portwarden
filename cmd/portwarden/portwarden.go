@@ -72,7 +72,12 @@ func main() {
 				if len(passphrase) == 0 {
 					return errors.New(ErrNoPhassPhraseProvided)
 				}
-				encryptBackup(filename, passphrase)
+				err := encryptBackup(filename, passphrase)
+				if err != nil {
+					fmt.Println("encryption failed: " + err.Error())
+					return err
+				}
+				fmt.Println("encrypted export successful")
 				return nil
 			},
 		},
@@ -87,7 +92,12 @@ func main() {
 				if len(filename) == 0 {
 					return errors.New(ErrNoFilenameProvided)
 				}
-				decryptBackup(filename, passphrase)
+				err := decryptBackup(filename, passphrase)
+				if err != nil {
+					fmt.Println("encryption failed: " + err.Error())
+					return err
+				}
+				fmt.Println("decryption successful")
 				return nil
 			},
 		},
@@ -103,7 +113,7 @@ func main() {
 
 }
 
-func encryptBackup(fileName, passphrase string) {
+func encryptBackup(fileName, passphrase string) error {
 	if !strings.HasSuffix(fileName, ".portwarden") {
 		fileName += ".portwarden"
 	}
@@ -111,60 +121,55 @@ func encryptBackup(fileName, passphrase string) {
 	pwes := []portwarden.PortWardenElement{}
 	sessionKey, err := BWGetSessionKey()
 	if err != nil {
-		fmt.Println("encryption failed: " + err.Error())
-		return
+		return err
 	}
 
 	// save formmated json to "main.json"
 	rawByte := BWListItemsRawBytes(sessionKey)
 	if err := json.Unmarshal(rawByte, &pwes); err != nil {
-		fmt.Println("encryption failed: " + err.Error())
-		return
+		return err
 	}
 	err = BWGetAllAttachments(BackupFolderName, sessionKey, pwes)
 	if err != nil {
-		fmt.Println("encryption failed: " + err.Error())
-		return
+		return err
 	}
 	formattedByte := pretty.Pretty(rawByte)
 	if err := ioutil.WriteFile(BackupFolderName+"main.json", formattedByte, 0644); err != nil {
-		fmt.Println("encryption failed: " + err.Error())
-		return
+		return err
 	}
 
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
 	err = archiver.Zip.Write(writer, []string{BackupFolderName})
 	if err != nil {
-		fmt.Println("encryption failed: " + err.Error())
-		return
+		return err
 	}
 
 	// derive a key from the master password
 	err = portwarden.EncryptFile(fileName, b.Bytes(), passphrase)
 	if err != nil {
-		fmt.Println("encryption failed: " + err.Error())
-		return
+		return err
 	}
 
 	// cleanup: delete temporary files
 	err = os.RemoveAll(BackupFolderName)
 	if err != nil {
-		fmt.Println("encryption failed: " + err.Error())
-		return
+		return err
 	}
+	return nil
 }
 
-func decryptBackup(fileName, passphrase string) {
+func decryptBackup(fileName, passphrase string) error {
 	tb, err := portwarden.DecryptFile(fileName, passphrase)
 	if err != nil {
 		fmt.Println("decryption failed: " + err.Error())
-		return
+		return err
 	}
 	if err := ioutil.WriteFile(fileName+".decrypted"+".zip", tb, 0644); err != nil {
 		fmt.Println("decryption failed: " + err.Error())
-		return
+		return err
 	}
+	return nil
 }
 
 func extractSessionKey(stdout string) (string, error) {
