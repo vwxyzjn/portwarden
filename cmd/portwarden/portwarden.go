@@ -121,7 +121,7 @@ func encryptBackup(fileName, passphrase string) {
 		fmt.Println("encryption failed: " + err.Error())
 		return
 	}
-	err = BWGetAllAttachments(BackupFolderName, sessionKey, pwes[:5])
+	err = BWGetAllAttachments(BackupFolderName, sessionKey, pwes)
 	if err != nil {
 		fmt.Println("encryption failed: " + err.Error())
 		return
