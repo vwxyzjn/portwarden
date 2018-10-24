@@ -14,7 +14,6 @@ import (
 	"sort"
 	"strings"
 
-	capturer "github.com/kami-zh/go-capturer"
 	"github.com/mholt/archiver"
 	"github.com/tidwall/pretty"
 	"github.com/vwxyzjn/portwarden"
@@ -166,15 +165,26 @@ func BWGetSessionKey() string {
 }
 
 func BWUnlockVaultToGetSessionKey() (string, error) {
-	var err error
-	out := capturer.CaptureOutput(func() {
-		cmd := exec.Command("bw", "unlock")
-		cmd.Stdin = os.Stdin
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		err = cmd.Run()
-	})
+	r, w, err := os.Pipe()
+	if err != nil {
+		panic(err)
+	}
+	rescueStdout := os.Stdout
+	os.Stdout = w
 
+	cmd := exec.Command("bw", "unlock")
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = w
+	cmd.Stderr = w
+	err = cmd.Run()
+	os.Stdout = rescueStdout
+	w.Close()
+
+	out, tempErr := ioutil.ReadAll(r)
+	if tempErr != nil {
+		return "", err
+	}
+	fmt.Println(string(out))
 	if err != nil {
 		if string(out) == BWErrNotLoggedIn {
 			return "", errors.New(string(out))
@@ -187,14 +197,26 @@ func BWUnlockVaultToGetSessionKey() (string, error) {
 }
 
 func BWLoginGetSessionKey() (string, error) {
-	var err error
-	out := capturer.CaptureOutput(func() {
-		cmd := exec.Command("bw", "login")
-		cmd.Stdin = os.Stdin
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		err = cmd.Run()
-	})
+	r, w, err := os.Pipe()
+	if err != nil {
+		panic(err)
+	}
+	rescueStdout := os.Stdout
+	os.Stdout = w
+	rescueStderr := os.Stderr
+	os.Stderr = w
+
+	cmd := exec.Command("bw", "login")
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = w
+	cmd.Stderr = w
+	err = cmd.Run()
+	w.Close()
+
+	os.Stdout = rescueStdout
+	os.Stderr = rescueStderr
+
+	out, err := ioutil.ReadAll(r)
 	if err != nil {
 		return "", err
 	}
