@@ -13,6 +13,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/mholt/archiver"
 	"github.com/tidwall/pretty"
@@ -34,9 +35,13 @@ const (
 	BWEnterMasterPassword      = "? Master password:"
 )
 
+var (
+	passphrase        string
+	filename          string
+	sleepMilliseconds int
+)
+
 func main() {
-	var passphrase string
-	var filename string
 	app := cli.NewApp()
 
 	app.Flags = []cli.Flag{
@@ -49,6 +54,12 @@ func main() {
 			Name:        "filename",
 			Usage:       "The name of the file you wish to export or decrypt",
 			Destination: &filename,
+		},
+		cli.IntFlag{
+			Name:        "sleep-milliseconds",
+			Usage:       "The number of milliseconds before making another request to download attachment",
+			Destination: &sleepMilliseconds,
+			Value:       300,
 		},
 	}
 
@@ -259,6 +270,7 @@ func BWGetAllAttachments(outputDir, sessionKey string, pws []portwarden.PortWard
 		if len(item.Attachments) > 0 {
 			for _, innerItem := range item.Attachments {
 				err := BWGetAttachment(outputDir+item.Name+"/", item.ID, innerItem.ID, sessionKey)
+				time.Sleep(time.Millisecond * time.Duration(sleepMilliseconds))
 				if err != nil {
 					return err
 				}
