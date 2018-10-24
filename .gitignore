@@ -1,3 +1,4 @@
 cmd/portwarden/portwarden_backup/*
 vendor/*
 **/*.portwarden
+**/*.decrypted.zip

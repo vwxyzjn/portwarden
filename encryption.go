@@ -7,6 +7,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"crypto/sha256"
+	"errors"
 	"io"
 	"io/ioutil"
 	"os"
@@ -16,6 +17,9 @@ import (
 
 const (
 	Salt = `,(@0vd<)D6c3:5jI;4BZ(#Gx2IZ6B>`
+
+	ErrMessageAuthenticationFailed = "cipher: message authentication failed"
+	ErrWrongBackupPassphrase       = "wrong backup passphrase entered"
 )
 
 // derive a key from the master password
@@ -51,6 +55,9 @@ func decrypt(data []byte, passphrase string) ([]byte, error) {
 	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
+		if err.Error() == ErrMessageAuthenticationFailed {
+			return []byte{}, errors.New(ErrWrongBackupPassphrase)
+		}
 		return []byte{}, err
 	}
 	return plaintext, nil

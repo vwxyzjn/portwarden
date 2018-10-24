@@ -21,13 +21,17 @@ import (
 )
 
 const (
-	BackupFolderName         = "./portwarden_backup/"
-	ErrVaultIsLocked         = "vault is locked"
-	ErrNoPhassPhraseProvided = "no passphrase provided"
-	ErrNoFilenameProvided    = "no filename provided"
+	Salt                          = `,(@0vd<)D6c3:5jI;4BZ(#Gx2IZ6B>`
+	BackupFolderName              = "./portwarden_backup/"
+	ErrVaultIsLocked              = "vault is locked"
+	ErrNoPhassPhraseProvided      = "no passphrase provided"
+	ErrNoFilenameProvided         = "no filename provided"
+	ErrSessionKeyExtractionFailed = "session key extraction failed"
 
-	BWErrNotLoggedIn = "You are not logged in."
-	Salt             = `,(@0vd<)D6c3:5jI;4BZ(#Gx2IZ6B>`
+	BWErrNotLoggedIn           = "You are not logged in."
+	BWErrInvalidMasterPassword = "Invalid master password."
+	BWEnterEmailAddress        = "? Email address:"
+	BWEnterMasterPassword      = "? Master password:"
 )
 
 func main() {
@@ -38,7 +42,7 @@ func main() {
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:        "passphrase",
-			Usage:       "The passphrase that is used to encrypt/decrypt export of Bitwarden Vault",
+			Usage:       "The passphrase that is used to encrypt/decrypt the backup export of your Bitwarden Vault",
 			Destination: &passphrase,
 		},
 		cli.StringFlag{
@@ -94,133 +98,137 @@ func encryptBackup(fileName, passphrase string) {
 	}
 
 	pwes := []portwarden.PortWardenElement{}
-	sessionKey := BWGetSessionKey()
+	sessionKey, err := BWGetSessionKey()
+	if err != nil {
+		fmt.Println("encryption failed: " + err.Error())
+		return
+	}
 
 	// save formmated json to "main.json"
 	rawByte := BWListItemsRawBytes(sessionKey)
 	if err := json.Unmarshal(rawByte, &pwes); err != nil {
-		panic(err)
+		fmt.Println("encryption failed: " + err.Error())
+		return
 	}
-	err := BWGetAllAttachments(BackupFolderName, sessionKey, pwes[:5])
+	err = BWGetAllAttachments(BackupFolderName, sessionKey, pwes[:5])
 	if err != nil {
-		panic(err)
+		fmt.Println("encryption failed: " + err.Error())
+		return
 	}
 	formattedByte := pretty.Pretty(rawByte)
 	if err := ioutil.WriteFile(BackupFolderName+"main.json", formattedByte, 0644); err != nil {
-		panic(err)
+		fmt.Println("encryption failed: " + err.Error())
+		return
 	}
 
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
 	err = archiver.Zip.Write(writer, []string{BackupFolderName})
 	if err != nil {
-		panic(err)
+		fmt.Println("encryption failed: " + err.Error())
+		return
 	}
 
 	// derive a key from the master password
 	err = portwarden.EncryptFile(fileName, b.Bytes(), passphrase)
 	if err != nil {
-		panic(err)
+		fmt.Println("encryption failed: " + err.Error())
+		return
 	}
 
 	// cleanup: delete temporary files
 	err = os.RemoveAll(BackupFolderName)
 	if err != nil {
-		panic(err)
+		fmt.Println("encryption failed: " + err.Error())
+		return
 	}
 }
 
 func decryptBackup(fileName, passphrase string) {
 	tb, err := portwarden.DecryptFile(fileName, passphrase)
 	if err != nil {
-		panic(err)
+		fmt.Println("decryption failed: " + err.Error())
+		return
 	}
 	if err := ioutil.WriteFile(fileName+".decrypted"+".zip", tb, 0644); err != nil {
-		panic(err)
+		fmt.Println("decryption failed: " + err.Error())
+		return
 	}
 }
 
-func extractSessionKey(stdout string) string {
+func extractSessionKey(stdout string) (string, error) {
 	r := regexp.MustCompile(`BW_SESSION=".+"`)
+	matches := r.FindAllString(stdout, 1)
+	if len(matches) == 0 {
+		return "", errors.New(ErrSessionKeyExtractionFailed)
+	}
 	sessionKeyRawString := r.FindAllString(stdout, 1)[0]
 	sessionKey := strings.TrimPrefix(sessionKeyRawString, `BW_SESSION="`)
 	sessionKey = sessionKey[:len(sessionKey)-1]
-	return sessionKey
+	return sessionKey, nil
 }
 
-func BWGetSessionKey() string {
+func BWGetSessionKey() (string, error) {
 	sessionKey, err := BWUnlockVaultToGetSessionKey()
 	if err != nil {
 		if err.Error() == BWErrNotLoggedIn {
-			fmt.Println("try login")
 			sessionKey, err = BWLoginGetSessionKey()
 			if err != nil {
-				panic(err)
+				return "", err
 			}
-		} else {
-			panic(err)
-		}
-	}
-	return sessionKey
-}
-
-func BWUnlockVaultToGetSessionKey() (string, error) {
-	r, w, err := os.Pipe()
-	if err != nil {
-		panic(err)
-	}
-	rescueStdout := os.Stdout
-	os.Stdout = w
-
-	cmd := exec.Command("bw", "unlock")
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = w
-	cmd.Stderr = w
-	err = cmd.Run()
-	os.Stdout = rescueStdout
-	w.Close()
-
-	out, tempErr := ioutil.ReadAll(r)
-	if tempErr != nil {
-		return "", err
-	}
-	fmt.Println(string(out))
-	if err != nil {
-		if string(out) == BWErrNotLoggedIn {
-			return "", errors.New(string(out))
 		} else {
 			return "", err
 		}
 	}
+	return sessionKey, err
+}
 
-	return extractSessionKey(string(out)), nil
+func BWUnlockVaultToGetSessionKey() (string, error) {
+	cmd := exec.Command("bw", "unlock")
+	var stdout bytes.Buffer
+
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer stdin.Close()
+	cmd.Stdout = &stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+
+	if err = cmd.Start(); err != nil {
+		fmt.Println("An error occured: ", err)
+	}
+	cmd.Wait()
+	sessionKey, err := extractSessionKey(stdout.String())
+	if err != nil {
+		return "", errors.New(string(stdout.Bytes()))
+	}
+	return sessionKey, nil
 }
 
 func BWLoginGetSessionKey() (string, error) {
-	r, w, err := os.Pipe()
-	if err != nil {
-		panic(err)
-	}
-	rescueStdout := os.Stdout
-	os.Stdout = w
-	rescueStderr := os.Stderr
-	os.Stderr = w
-
 	cmd := exec.Command("bw", "login")
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = w
-	cmd.Stderr = w
-	err = cmd.Run()
-	w.Close()
+	var stdout bytes.Buffer
 
-	os.Stdout = rescueStdout
-	os.Stderr = rescueStderr
-
-	out, err := ioutil.ReadAll(r)
+	stdin, err := cmd.StdinPipe()
 	if err != nil {
+		fmt.Println(err)
+	}
+	defer stdin.Close()
+	cmd.Stdout = &stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+
+	if err = cmd.Start(); err != nil {
 		return "", err
 	}
-	return extractSessionKey(string(out)), nil
+	cmd.Wait()
+	sessionKey, err := extractSessionKey(stdout.String())
+	if err != nil {
+		return "", errors.New(string(stdout.Bytes()))
+	}
+	return sessionKey, nil
 }
 
 func BWListItemsRawBytes(sessionKey string) []byte {
