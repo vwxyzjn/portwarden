@@ -14,3 +14,19 @@ Go to https://github.com/bitwarden/cli/releases to download the latest version o
 ## Contribution 
 
 PRs are welcome. For ideas, you could probably add a progress bar. 
+
+## Project Proposal for Software Design Course (SE-575) at Drexel University
+
+This section is experimental and for fun.
+
+I currently taking this class, and our final project is suppose to demonstrate some traits of the modern software architecture. So my teammate [Samridh Prasad](https://github.com/samridhprasad) and I figure we can probably add some components to Portwarden to make it more interesting. Couple initial deliverables are listed below:
+
+### Backend server
+- [ ] Allow Bitwarden User to login and periodically back up their vault to Google Drive.
+- [ ] If the user has attachments, download them in every 300 milliseconds because we don't want to get blacklisted. This means we probably want a queue as part of the architecture.
+- [ ] Use Let's encrypt to make the server use HTTPS protocal.
+
+
+### Frontend 
+- [ ] Has a **simple** front end that gets user's username and password and show them if the backup process has begun.
+- [ ] Allow the user to cancel such backup process if he/she wants. 
