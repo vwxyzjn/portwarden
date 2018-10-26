@@ -36,8 +36,5 @@ I currently taking this class, and our final project is suppose to demonstrate s
 
 It probably looks something like this:
 
-<object data="./web/architecture.pdf" type="application/pdf" width="700px" height="700px">
-    <embed src="./web/architecture.pdf">
-        <p>This browser does not support PDFs. Please download the PDF to view it: <a href="./web/architecture.pdf">Download PDF</a>.</p>
-    </embed>
-</object>
+![alt text](./web/architecture.svg "Logo Title Text 1")
+
