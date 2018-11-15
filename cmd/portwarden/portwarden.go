@@ -1,9 +1,7 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -15,21 +13,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mholt/archiver"
-	"github.com/tidwall/pretty"
 	"github.com/vwxyzjn/portwarden"
 	cli "gopkg.in/urfave/cli.v1"
 )
 
 const (
-	Salt                          = `,(@0vd<)D6c3:5jI;4BZ(#Gx2IZ6B>`
 	BackupFolderName              = "./portwarden_backup/"
 	ErrVaultIsLocked              = "vault is locked"
 	ErrNoPhassPhraseProvided      = "no passphrase provided"
 	ErrNoFilenameProvided         = "no filename provided"
 	ErrSessionKeyExtractionFailed = "session key extraction failed"
 
-	BWErrNotLoggedIn           = "You are not logged in."
 	BWErrInvalidMasterPassword = "Invalid master password."
 	BWEnterEmailAddress        = "? Email address:"
 	BWEnterMasterPassword      = "? Master password:"
@@ -72,7 +66,7 @@ func main() {
 				if len(passphrase) == 0 {
 					return errors.New(ErrNoPhassPhraseProvided)
 				}
-				err := encryptBackup(filename, passphrase)
+				err := EncryptBackupController(filename, passphrase)
 				if err != nil {
 					fmt.Println("encryption failed: " + err.Error())
 					return err
@@ -113,46 +107,17 @@ func main() {
 
 }
 
-func encryptBackup(fileName, passphrase string) error {
+func EncryptBackupController(fileName, passphrase string) error {
 	if !strings.HasSuffix(fileName, ".portwarden") {
 		fileName += ".portwarden"
 	}
 
-	pwes := []portwarden.PortWardenElement{}
 	sessionKey, err := BWGetSessionKey()
 	if err != nil {
 		return err
 	}
 
-	// save formmated json to "main.json"
-	rawByte := BWListItemsRawBytes(sessionKey)
-	if err := json.Unmarshal(rawByte, &pwes); err != nil {
-		return err
-	}
-	err = BWGetAllAttachments(BackupFolderName, sessionKey, pwes)
-	if err != nil {
-		return err
-	}
-	formattedByte := pretty.Pretty(rawByte)
-	if err := ioutil.WriteFile(BackupFolderName+"main.json", formattedByte, 0644); err != nil {
-		return err
-	}
-
-	var b bytes.Buffer
-	writer := bufio.NewWriter(&b)
-	err = archiver.Zip.Write(writer, []string{BackupFolderName})
-	if err != nil {
-		return err
-	}
-
-	// derive a key from the master password
-	err = portwarden.EncryptFile(fileName, b.Bytes(), passphrase)
-	if err != nil {
-		return err
-	}
-
-	// cleanup: delete temporary files
-	err = os.RemoveAll(BackupFolderName)
+	err = portwarden.EncryptBackup(fileName, passphrase, sessionKey, sleepMilliseconds)
 	if err != nil {
 		return err
 	}
@@ -187,7 +152,7 @@ func extractSessionKey(stdout string) (string, error) {
 func BWGetSessionKey() (string, error) {
 	sessionKey, err := BWUnlockVaultToGetSessionKey()
 	if err != nil {
-		if err.Error() == BWErrNotLoggedIn {
+		if err.Error() == portwarden.BWErrNotLoggedIn {
 			sessionKey, err = BWLoginGetSessionKey()
 			if err != nil {
 				return "", err
