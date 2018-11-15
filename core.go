@@ -31,6 +31,9 @@ const (
 )
 
 func EncryptBackup(fileName, passphrase, sessionKey string, sleepMilliseconds int) error {
+	if !strings.HasSuffix(fileName, ".portwarden") {
+		fileName += ".portwarden"
+	}
 	pwes := []PortWardenElement{}
 
 	// save formmated json to "main.json"

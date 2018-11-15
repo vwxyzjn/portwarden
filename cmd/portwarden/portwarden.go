@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"sort"
-	"strings"
 
 	"github.com/vwxyzjn/portwarden"
 	cli "gopkg.in/urfave/cli.v1"
@@ -105,14 +104,10 @@ func main() {
 }
 
 func EncryptBackupController(fileName, passphrase string) error {
-	if !strings.HasSuffix(fileName, ".portwarden") {
-		fileName += ".portwarden"
-	}
 	sessionKey, err := BWGetSessionKey()
 	if err != nil {
 		return err
 	}
-
 	return portwarden.EncryptBackup(fileName, passphrase, sessionKey, sleepMilliseconds)
 }
 
