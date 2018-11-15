@@ -133,17 +133,11 @@ func BWGetSessionKey() (string, error) {
 func BWUnlockVaultToGetSessionKey() (string, error) {
 	cmd := exec.Command("bw", "unlock")
 	var stdout bytes.Buffer
-
-	stdin, err := cmd.StdinPipe()
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer stdin.Close()
 	cmd.Stdout = &stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
 
-	if err = cmd.Start(); err != nil {
+	if err := cmd.Start(); err != nil {
 		fmt.Println("An error occured: ", err)
 	}
 	cmd.Wait()
@@ -157,17 +151,11 @@ func BWUnlockVaultToGetSessionKey() (string, error) {
 func BWLoginGetSessionKey() (string, error) {
 	cmd := exec.Command("bw", "login")
 	var stdout bytes.Buffer
-
-	stdin, err := cmd.StdinPipe()
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer stdin.Close()
 	cmd.Stdout = &stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
 
-	if err = cmd.Start(); err != nil {
+	if err := cmd.Start(); err != nil {
 		return "", err
 	}
 	cmd.Wait()
