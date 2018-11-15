@@ -7,10 +7,8 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"regexp"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/vwxyzjn/portwarden"
 	cli "gopkg.in/urfave/cli.v1"
@@ -110,7 +108,6 @@ func EncryptBackupController(fileName, passphrase string) error {
 	if !strings.HasSuffix(fileName, ".portwarden") {
 		fileName += ".portwarden"
 	}
-
 	sessionKey, err := BWGetSessionKey()
 	if err != nil {
 		return err
@@ -121,18 +118,6 @@ func EncryptBackupController(fileName, passphrase string) error {
 
 func DecryptBackupController(fileName, passphrase string) error {
 	return portwarden.DecryptBackup(fileName, passphrase)
-}
-
-func extractSessionKey(stdout string) (string, error) {
-	r := regexp.MustCompile(`BW_SESSION=".+"`)
-	matches := r.FindAllString(stdout, 1)
-	if len(matches) == 0 {
-		return "", errors.New(ErrSessionKeyExtractionFailed)
-	}
-	sessionKeyRawString := r.FindAllString(stdout, 1)[0]
-	sessionKey := strings.TrimPrefix(sessionKeyRawString, `BW_SESSION="`)
-	sessionKey = sessionKey[:len(sessionKey)-1]
-	return sessionKey, nil
 }
 
 func BWGetSessionKey() (string, error) {
@@ -167,7 +152,7 @@ func BWUnlockVaultToGetSessionKey() (string, error) {
 		fmt.Println("An error occured: ", err)
 	}
 	cmd.Wait()
-	sessionKey, err := extractSessionKey(stdout.String())
+	sessionKey, err := portwarden.ExtractSessionKey(stdout.String())
 	if err != nil {
 		return "", errors.New(string(stdout.Bytes()))
 	}
@@ -191,47 +176,9 @@ func BWLoginGetSessionKey() (string, error) {
 		return "", err
 	}
 	cmd.Wait()
-	sessionKey, err := extractSessionKey(stdout.String())
+	sessionKey, err := portwarden.ExtractSessionKey(stdout.String())
 	if err != nil {
 		return "", errors.New(string(stdout.Bytes()))
 	}
 	return sessionKey, nil
-}
-
-func BWListItemsRawBytes(sessionKey string) []byte {
-	var stdout, stderr bytes.Buffer
-	cmd := exec.Command("bw", "list", "items", "--session", sessionKey)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-	err := cmd.Run()
-	if err != nil {
-		panic(err)
-	}
-	return stdout.Bytes()
-}
-
-func BWGetAttachment(outputDir, itemID, attachmentID, sessionKey string) error {
-	cmd := exec.Command("bw", "get", "attachment", attachmentID, "--itemid", itemID,
-		"--session", sessionKey, "--output", outputDir)
-	err := cmd.Run()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func BWGetAllAttachments(outputDir, sessionKey string, pws []portwarden.PortWardenElement) error {
-	for _, item := range pws {
-		if len(item.Attachments) > 0 {
-			for _, innerItem := range item.Attachments {
-				err := BWGetAttachment(outputDir+item.Name+"/", item.ID, innerItem.ID, sessionKey)
-				time.Sleep(time.Millisecond * time.Duration(sleepMilliseconds))
-				if err != nil {
-					return err
-				}
-			}
-		}
-	}
-	return nil
 }

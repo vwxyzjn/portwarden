@@ -4,10 +4,13 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/mholt/archiver"
@@ -76,6 +79,18 @@ func DecryptBackup(fileName, passphrase string) error {
 		return err
 	}
 	return nil
+}
+
+func ExtractSessionKey(stdout string) (string, error) {
+	r := regexp.MustCompile(`BW_SESSION=".+"`)
+	matches := r.FindAllString(stdout, 1)
+	if len(matches) == 0 {
+		return "", errors.New(ErrSessionKeyExtractionFailed)
+	}
+	sessionKeyRawString := r.FindAllString(stdout, 1)[0]
+	sessionKey := strings.TrimPrefix(sessionKeyRawString, `BW_SESSION="`)
+	sessionKey = sessionKey[:len(sessionKey)-1]
+	return sessionKey, nil
 }
 
 func BWListItemsRawBytes(sessionKey string) []byte {
