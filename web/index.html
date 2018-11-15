@@ -34,6 +34,9 @@
         var line =  now() + " " + msg.data + "\n";
         chat.innerText += line;
       };
+      ws.onopen = function (event) {
+        console.log(event); 
+      };
       text.onkeydown = function (e) {
         if (e.keyCode === 13 && text.value !== "") {
           ws.send("<" + name + "> " + text.value);
