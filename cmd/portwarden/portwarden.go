@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -86,7 +85,7 @@ func main() {
 				if len(filename) == 0 {
 					return errors.New(ErrNoFilenameProvided)
 				}
-				err := decryptBackup(filename, passphrase)
+				err := DecryptBackupController(filename, passphrase)
 				if err != nil {
 					fmt.Println("encryption failed: " + err.Error())
 					return err
@@ -117,24 +116,11 @@ func EncryptBackupController(fileName, passphrase string) error {
 		return err
 	}
 
-	err = portwarden.EncryptBackup(fileName, passphrase, sessionKey, sleepMilliseconds)
-	if err != nil {
-		return err
-	}
-	return nil
+	return portwarden.EncryptBackup(fileName, passphrase, sessionKey, sleepMilliseconds)
 }
 
-func decryptBackup(fileName, passphrase string) error {
-	tb, err := portwarden.DecryptFile(fileName, passphrase)
-	if err != nil {
-		fmt.Println("decryption failed: " + err.Error())
-		return err
-	}
-	if err := ioutil.WriteFile(fileName+".decrypted"+".zip", tb, 0644); err != nil {
-		fmt.Println("decryption failed: " + err.Error())
-		return err
-	}
-	return nil
+func DecryptBackupController(fileName, passphrase string) error {
+	return portwarden.DecryptBackup(fileName, passphrase)
 }
 
 func extractSessionKey(stdout string) (string, error) {
