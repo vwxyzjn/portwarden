@@ -9,8 +9,6 @@ import (
 	"crypto/sha256"
 	"errors"
 	"io"
-	"io/ioutil"
-	"os"
 
 	"golang.org/x/crypto/pbkdf2"
 )
@@ -61,20 +59,4 @@ func DecryptBytes(data []byte, passphrase string) ([]byte, error) {
 		return []byte{}, err
 	}
 	return plaintext, nil
-}
-
-func EncryptFile(filename string, data []byte, passphrase string) error {
-	f, _ := os.Create(filename)
-	defer f.Close()
-	cipheredData, err := EncryptBytes(data, passphrase)
-	if err != nil {
-		return err
-	}
-	f.Write(cipheredData)
-	return nil
-}
-
-func DecryptFile(filename string, passphrase string) ([]byte, error) {
-	data, _ := ioutil.ReadFile(filename)
-	return DecryptBytes(data, passphrase)
 }

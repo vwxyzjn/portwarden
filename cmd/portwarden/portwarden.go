@@ -108,11 +108,11 @@ func EncryptBackupController(fileName, passphrase string) error {
 	if err != nil {
 		return err
 	}
-	return portwarden.EncryptBackup(fileName, passphrase, sessionKey, sleepMilliseconds)
+	return portwarden.CreateBackupFile(fileName, passphrase, sessionKey, sleepMilliseconds)
 }
 
 func DecryptBackupController(fileName, passphrase string) error {
-	return portwarden.DecryptBackup(fileName, passphrase)
+	return portwarden.DecryptBackupFile(fileName, passphrase)
 }
 
 func BWGetSessionKey() (string, error) {

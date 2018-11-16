@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -28,51 +29,88 @@ const (
 	BWErrInvalidMasterPassword = "Invalid master password."
 	BWEnterEmailAddress        = "? Email address:"
 	BWEnterMasterPassword      = "? Master password:"
+
+	LoginCredentialMethodNone          = 100
+	LoginCredentialMethodAuthenticator = 0
+	LoginCredentialMethodEmail         = 1
+	LoginCredentialMethodYubikey       = 3
 )
 
-func EncryptBackup(fileName, passphrase, sessionKey string, sleepMilliseconds int) error {
+// LoginCredentials is used to login to the `bw` cli. See documentation
+// https://help.bitwarden.com/article/cli/
+// The possible `Method` values are
+// None 			100
+// Authenticator	0
+// Email			1
+// Yubikey			3
+type LoginCredentials struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Method   int    `json:"method"`
+	Code     string `json:"code"`
+}
+
+func CreateBackupFile(fileName, passphrase, sessionKey string, sleepMilliseconds int) error {
 	if !strings.HasSuffix(fileName, ".portwarden") {
 		fileName += ".portwarden"
 	}
+	f, err := os.Create(fileName)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	encryptedData, err := CreateBackupBytes(passphrase, sessionKey, sleepMilliseconds)
+	if err != nil {
+		return err
+	}
+	f.Write(encryptedData)
+	return nil
+}
+
+func CreateBackupBytes(passphrase, sessionKey string, sleepMilliseconds int) ([]byte, error) {
 	pwes := []PortWardenElement{}
 
 	// save formmated json to "main.json"
 	rawByte := BWListItemsRawBytes(sessionKey)
 	if err := json.Unmarshal(rawByte, &pwes); err != nil {
-		return err
+		return nil, err
 	}
 	err := BWGetAllAttachments(BackupFolderName, sessionKey, pwes, sleepMilliseconds)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	formattedByte := pretty.Pretty(rawByte)
 	if err := ioutil.WriteFile(BackupFolderName+"main.json", formattedByte, 0644); err != nil {
-		return err
+		return nil, err
 	}
 
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
 	err = archiver.Zip.Write(writer, []string{BackupFolderName})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// derive a key from the master password
-	err = EncryptFile(fileName, b.Bytes(), passphrase)
+	encryptedBytes, err := EncryptBytes(b.Bytes(), passphrase)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// cleanup: delete temporary files
 	err = os.RemoveAll(BackupFolderName)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return encryptedBytes, nil
 }
 
-func DecryptBackup(fileName, passphrase string) error {
-	tb, err := DecryptFile(fileName, passphrase)
+func DecryptBackupFile(fileName, passphrase string) error {
+	rawBytes, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		return err
+	}
+	tb, err := DecryptBytes(rawBytes, passphrase)
 	if err != nil {
 		fmt.Println("decryption failed: " + err.Error())
 		return err
@@ -132,4 +170,24 @@ func BWGetAllAttachments(outputDir, sessionKey string, pws []PortWardenElement, 
 		}
 	}
 	return nil
+}
+
+func BWLoginGetSessionKey(lc *LoginCredentials) (string, error) {
+	var cmd *exec.Cmd
+	if lc.Method != LoginCredentialMethodNone {
+		cmd = exec.Command("bw", "login", lc.Email, lc.Password, "--method", strconv.Itoa(lc.Method), "--code", lc.Code, "--raw")
+	} else {
+		cmd = exec.Command("bw", "login", lc.Email, lc.Password, "--raw")
+	}
+	var stdout bytes.Buffer
+	cmd.Stdout = &stdout
+	if err := cmd.Run(); err != nil {
+		return "", err
+	}
+	sessionKey := stdout.String()
+	cmd = exec.Command("bw", "logout")
+	if err := cmd.Run(); err != nil {
+		return "", err
+	}
+	return sessionKey, nil
 }
