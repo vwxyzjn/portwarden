@@ -71,11 +71,14 @@ func CreateBackupBytes(passphrase, sessionKey string, sleepMilliseconds int) ([]
 	pwes := []PortWardenElement{}
 
 	// save formmated json to "main.json"
-	rawByte := BWListItemsRawBytes(sessionKey)
+	rawByte, err := BWListItemsRawBytes(sessionKey)
+	if err != nil {
+		return nil, err
+	}
 	if err := json.Unmarshal(rawByte, &pwes); err != nil {
 		return nil, err
 	}
-	err := BWGetAllAttachments(BackupFolderName, sessionKey, pwes, sleepMilliseconds)
+	err = BWGetAllAttachments(BackupFolderName, sessionKey, pwes, sleepMilliseconds)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +137,7 @@ func ExtractSessionKey(stdout string) (string, error) {
 	return sessionKey, nil
 }
 
-func BWListItemsRawBytes(sessionKey string) []byte {
+func BWListItemsRawBytes(sessionKey string) ([]byte, error) {
 	var stdout, stderr bytes.Buffer
 	cmd := exec.Command("bw", "list", "items", "--session", sessionKey)
 	cmd.Stdin = os.Stdin
@@ -142,9 +145,9 @@ func BWListItemsRawBytes(sessionKey string) []byte {
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return stdout.Bytes()
+	return stdout.Bytes(), nil
 }
 
 func BWGetAttachment(outputDir, itemID, attachmentID, sessionKey string) error {
