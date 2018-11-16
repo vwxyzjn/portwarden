@@ -66,11 +66,11 @@ func decrypt(data []byte, passphrase string) ([]byte, error) {
 func EncryptFile(filename string, data []byte, passphrase string) error {
 	f, _ := os.Create(filename)
 	defer f.Close()
-	ciphertext, err := encrypt(data, passphrase)
+	cipheredData, err := encrypt(data, passphrase)
 	if err != nil {
 		return err
 	}
-	f.Write(ciphertext)
+	f.Write(cipheredData)
 	return nil
 }
 
