@@ -189,7 +189,7 @@ func BWLoginGetSessionKey(lc *LoginCredentials) (string, error) {
 	var stdout bytes.Buffer
 	cmd.Stdout = &stdout
 	if err := cmd.Run(); err != nil {
-		return "", err
+		return stdout.String(), err
 	}
 	sessionKey := stdout.String()
 	return sessionKey, nil
