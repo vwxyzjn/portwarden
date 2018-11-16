@@ -4,41 +4,51 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"net/http"
 	"os"
 	"os/exec"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"github.com/vwxyzjn/portwarden"
-	melody "gopkg.in/olahol/melody.v1"
 )
 
-func EncryptBackupController(c *gin.Context) {
-	m := melody.New()
-	m.HandleRequest(c.Writer, c.Request)
-	m.HandleConnect(func(s *melody.Session) {
-		_, err := BWGetSessionKey(m)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		}
-		m.Broadcast([]byte("you know what"))
-		// portwarden.EncryptBackup(fileName, passphrase, sessionKey, sleepMilliseconds)
-	})
-	m.HandleMessage(func(s *melody.Session, msg []byte) {
-		m.Broadcast([]byte("you know what"))
-	})
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
 }
 
-func DecryptBackupController(m *melody.Melody, msg []byte) {
+func EncryptBackupController(c *gin.Context) {
+	conn, _ := upgrader.Upgrade(c.Writer, c.Request, nil) // error ignored for sake of simplicity
+
+	go func() {
+		for {
+			// Read message from browser
+			msgType, msg, err := conn.ReadMessage()
+			if err != nil {
+				return
+			}
+
+			// Print the message to the console
+			fmt.Printf("%s read:\n %d, %s", conn.RemoteAddr(), msgType, msg)
+		}
+	}()
+
+	_, err := BWGetSessionKey(conn)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func DecryptBackupController(c *websocket.Conn, msg []byte) {
 	// return portwarden.DecryptBackup(fileName, passphrase)
 }
 
-func BWGetSessionKey(m *melody.Melody) (string, error) {
-	sessionKey, err := BWUnlockVaultToGetSessionKey(m)
+func BWGetSessionKey(c *websocket.Conn) (string, error) {
+	sessionKey, err := BWUnlockVaultToGetSessionKey(c)
 	if err != nil {
 		if err.Error() == portwarden.BWErrNotLoggedIn {
-			sessionKey, err = BWLoginGetSessionKey(m)
+			sessionKey, err = BWLoginGetSessionKey(c)
 			if err != nil {
 				return "", err
 			}
@@ -49,7 +59,7 @@ func BWGetSessionKey(m *melody.Melody) (string, error) {
 	return sessionKey, err
 }
 
-func BWUnlockVaultToGetSessionKey(m *melody.Melody) (string, error) {
+func BWUnlockVaultToGetSessionKey(c *websocket.Conn) (string, error) {
 	cmd := exec.Command("bw", "unlock")
 	var stdout bytes.Buffer
 	cmd.Stdout = &stdout
@@ -67,7 +77,7 @@ func BWUnlockVaultToGetSessionKey(m *melody.Melody) (string, error) {
 	return sessionKey, nil
 }
 
-func BWLoginGetSessionKey(m *melody.Melody) (string, error) {
+func BWLoginGetSessionKey(c *websocket.Conn) (string, error) {
 	cmd := exec.Command("bw", "login")
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
@@ -78,11 +88,11 @@ func BWLoginGetSessionKey(m *melody.Melody) (string, error) {
 	if err := cmd.Start(); err != nil {
 		return "", err
 	}
-	m.Broadcast(stderr.Bytes())
 
 	go func() {
-		time.Sleep(time.Millisecond * 200)
-		m.Broadcast(stderr.Bytes())
+		time.Sleep(time.Millisecond * 500)
+		if err := c.WriteMessage(1, stderr.Bytes()); err != nil {
+		}
 	}()
 
 	cmd.Wait()
