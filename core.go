@@ -78,6 +78,9 @@ func CreateBackupBytes(passphrase, sessionKey string, sleepMilliseconds int) ([]
 	if err := json.Unmarshal(rawByte, &pwes); err != nil {
 		return nil, err
 	}
+	if err = os.MkdirAll(BackupFolderName, os.ModePerm); err != nil {
+		return nil, err
+	}
 	err = BWGetAllAttachments(BackupFolderName, sessionKey, pwes, sleepMilliseconds)
 	if err != nil {
 		return nil, err
