@@ -51,6 +51,7 @@ type LoginCredentials struct {
 }
 
 func CreateBackupFile(fileName, passphrase, sessionKey string, sleepMilliseconds int) error {
+	defer BWLogout()
 	if !strings.HasSuffix(fileName, ".portwarden") {
 		fileName += ".portwarden"
 	}
@@ -191,9 +192,10 @@ func BWLoginGetSessionKey(lc *LoginCredentials) (string, error) {
 		return "", err
 	}
 	sessionKey := stdout.String()
-	cmd = exec.Command("bw", "logout")
-	if err := cmd.Run(); err != nil {
-		return "", err
-	}
 	return sessionKey, nil
+}
+
+func BWLogout() error {
+	cmd := exec.Command("bw", "logout")
+	return cmd.Run()
 }

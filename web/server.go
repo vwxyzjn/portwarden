@@ -14,7 +14,7 @@ func main() {
 		http.ServeFile(c.Writer, c.Request, "index.html")
 	})
 
-	r.GET("/ws", controllers.EncryptBackupController)
+	r.POST("/encrypt", controllers.EncryptBackupController)
 
 	r.Run(":5000")
 }
