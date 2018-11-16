@@ -27,7 +27,7 @@ func deriveKey(passphrase string) []byte {
 	return pbkdf2.Key([]byte(passphrase), []byte(Salt), 4096, 32, sha256.New)
 }
 
-func encrypt(data []byte, passphrase string) ([]byte, error) {
+func EncryptBytes(data []byte, passphrase string) ([]byte, error) {
 	block, _ := aes.NewCipher(deriveKey(passphrase))
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
@@ -41,7 +41,7 @@ func encrypt(data []byte, passphrase string) ([]byte, error) {
 	return ciphertext, nil
 }
 
-func decrypt(data []byte, passphrase string) ([]byte, error) {
+func DecryptBytes(data []byte, passphrase string) ([]byte, error) {
 	key := deriveKey(passphrase)
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -66,7 +66,7 @@ func decrypt(data []byte, passphrase string) ([]byte, error) {
 func EncryptFile(filename string, data []byte, passphrase string) error {
 	f, _ := os.Create(filename)
 	defer f.Close()
-	cipheredData, err := encrypt(data, passphrase)
+	cipheredData, err := EncryptBytes(data, passphrase)
 	if err != nil {
 		return err
 	}
@@ -76,5 +76,5 @@ func EncryptFile(filename string, data []byte, passphrase string) error {
 
 func DecryptFile(filename string, passphrase string) ([]byte, error) {
 	data, _ := ioutil.ReadFile(filename)
-	return decrypt(data, passphrase)
+	return DecryptBytes(data, passphrase)
 }
