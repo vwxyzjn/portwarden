@@ -9,8 +9,6 @@ import (
 	"crypto/sha256"
 	"errors"
 	"io"
-	"io/ioutil"
-	"os"
 
 	"golang.org/x/crypto/pbkdf2"
 )
@@ -23,12 +21,12 @@ const (
 )
 
 // derive a key from the master password
-func deriveKey(passphrase string) []byte {
+func DeriveKey(passphrase string) []byte {
 	return pbkdf2.Key([]byte(passphrase), []byte(Salt), 4096, 32, sha256.New)
 }
 
-func encrypt(data []byte, passphrase string) ([]byte, error) {
-	block, _ := aes.NewCipher(deriveKey(passphrase))
+func EncryptBytes(data []byte, passphrase string) ([]byte, error) {
+	block, _ := aes.NewCipher(DeriveKey(passphrase))
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
 		return []byte{}, err
@@ -41,8 +39,8 @@ func encrypt(data []byte, passphrase string) ([]byte, error) {
 	return ciphertext, nil
 }
 
-func decrypt(data []byte, passphrase string) ([]byte, error) {
-	key := deriveKey(passphrase)
+func DecryptBytes(data []byte, passphrase string) ([]byte, error) {
+	key := DeriveKey(passphrase)
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return []byte{}, err
@@ -61,20 +59,4 @@ func decrypt(data []byte, passphrase string) ([]byte, error) {
 		return []byte{}, err
 	}
 	return plaintext, nil
-}
-
-func EncryptFile(filename string, data []byte, passphrase string) error {
-	f, _ := os.Create(filename)
-	defer f.Close()
-	ciphertext, err := encrypt(data, passphrase)
-	if err != nil {
-		return err
-	}
-	f.Write(ciphertext)
-	return nil
-}
-
-func DecryptFile(filename string, passphrase string) ([]byte, error) {
-	data, _ := ioutil.ReadFile(filename)
-	return decrypt(data, passphrase)
 }
