@@ -148,8 +148,7 @@ func main() {
 	//
 	// Multipart upload method
 	// see https://developers.google.com/drive/v3/web/manage-uploads
-	fileName := "test.zip"
-	fileBytes, err := ioutil.ReadFile(fileName)
+	fileBytes := []byte("xixix")
 	if err != nil {
 		log.Fatalf("Unable to read file for upload: %v", err)
 	}
@@ -169,7 +168,7 @@ func main() {
 		"--" + boundary + "\n" +
 		"Content-Type: application/json; charset=" + string('"') + "UTF-8" + string('"') + "\n\n" +
 		"{ \n" +
-		string('"') + "name" + string('"') + ":" + string('"') + fileName + string('"') + "\n" +
+		string('"') + "name" + string('"') + ":" + string('"') + "test" + string('"') + "\n" +
 		"} \n\n" +
 		"--" + boundary + "\n" +
 		"Content-Type:" + fileMIMEType + "\n\n" +
