@@ -11,7 +11,7 @@ import (
 	"github.com/vwxyzjn/portwarden/web/models"
 )
 
-func EncryptBackupController(c *gin.Context) {
+func EncryptBackupHandler(c *gin.Context) {
 	var ebi models.EncryptBackupInfo
 	if err := c.ShouldBindJSON(&ebi); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ""})
@@ -32,7 +32,7 @@ func EncryptBackupController(c *gin.Context) {
 	}
 }
 
-func DecryptBackupController(c *gin.Context) {
+func DecryptBackupHandler(c *gin.Context) {
 	var dbi models.DecryptBackupInfo
 	var err error
 	if err = c.ShouldBind(&dbi); err != nil {
