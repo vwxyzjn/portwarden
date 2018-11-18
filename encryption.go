@@ -21,12 +21,12 @@ const (
 )
 
 // derive a key from the master password
-func deriveKey(passphrase string) []byte {
+func DeriveKey(passphrase string) []byte {
 	return pbkdf2.Key([]byte(passphrase), []byte(Salt), 4096, 32, sha256.New)
 }
 
 func EncryptBytes(data []byte, passphrase string) ([]byte, error) {
-	block, _ := aes.NewCipher(deriveKey(passphrase))
+	block, _ := aes.NewCipher(DeriveKey(passphrase))
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
 		return []byte{}, err
@@ -40,7 +40,7 @@ func EncryptBytes(data []byte, passphrase string) ([]byte, error) {
 }
 
 func DecryptBytes(data []byte, passphrase string) ([]byte, error) {
-	key := deriveKey(passphrase)
+	key := DeriveKey(passphrase)
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return []byte{}, err
