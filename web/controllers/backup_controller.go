@@ -32,6 +32,12 @@ func EncryptBackupHandler(c *gin.Context) {
 	}
 }
 
+//TODO: GoogleDriveHandler() will return Json with the google login url
+func GoogleDriveHandler(c *gin.Context) {
+	//client := getClient(ctx, config)
+
+}
+
 func DecryptBackupHandler(c *gin.Context) {
 	var dbi models.DecryptBackupInfo
 	var err error
