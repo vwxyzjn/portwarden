@@ -22,7 +22,14 @@
 [[projects]]
   branch = "master"
   name = "github.com/dsnet/compress"
-  packages = [".","bzip2","bzip2/internal/sais","internal","internal/errors","internal/prefix"]
+  packages = [
+    ".",
+    "bzip2",
+    "bzip2/internal/sais",
+    "internal",
+    "internal/errors",
+    "internal/prefix"
+  ]
   revision = "cc9eb1d7ad760af14e8f918698f745e80377af4f"
 
 [[projects]]
@@ -39,7 +46,12 @@
 
 [[projects]]
   name = "github.com/gin-gonic/gin"
-  packages = [".","binding","json","render"]
+  packages = [
+    ".",
+    "binding",
+    "json",
+    "render"
+  ]
   revision = "b869fe1415e4b9eb52f247441830d502aece2d4d"
   version = "v1.3.0"
 
@@ -93,7 +105,10 @@
 
 [[projects]]
   name = "github.com/pierrec/lz4"
-  packages = [".","internal/xxh32"]
+  packages = [
+    ".",
+    "internal/xxh32"
+  ]
   revision = "635575b42742856941dbc767b44905bb9ba083f6"
   version = "v2.0.7"
 
@@ -111,7 +126,12 @@
 
 [[projects]]
   name = "github.com/ulikunitz/xz"
-  packages = [".","internal/hash","internal/xlog","lzma"]
+  packages = [
+    ".",
+    "internal/hash",
+    "internal/xlog",
+    "lzma"
+  ]
   revision = "0c6b41e72360850ca4f98dc341fd999726ea007f"
   version = "v0.5.4"
 
@@ -124,13 +144,22 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["context","context/ctxhttp"]
+  packages = [
+    "context",
+    "context/ctxhttp"
+  ]
   revision = "adae6a3d119ae4890b46832a2e88a95adc62b8e7"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/oauth2"
-  packages = [".","google","internal","jws","jwt"]
+  packages = [
+    ".",
+    "google",
+    "internal",
+    "jws",
+    "jwt"
+  ]
   revision = "f42d05182288abf10faef86d16c0d07b8d40ea2d"
 
 [[projects]]
@@ -142,12 +171,29 @@
 [[projects]]
   branch = "master"
   name = "google.golang.org/api"
-  packages = ["drive/v3","gensupport","googleapi","googleapi/internal/uritemplates"]
+  packages = [
+    "drive/v2",
+    "drive/v3",
+    "gensupport",
+    "googleapi",
+    "googleapi/internal/uritemplates"
+  ]
   revision = "83a9d304b1e613fc253e1e2710778642fe81af53"
 
 [[projects]]
   name = "google.golang.org/appengine"
-  packages = [".","internal","internal/app_identity","internal/base","internal/datastore","internal/log","internal/modules","internal/remote_api","internal/urlfetch","urlfetch"]
+  packages = [
+    ".",
+    "internal",
+    "internal/app_identity",
+    "internal/base",
+    "internal/datastore",
+    "internal/log",
+    "internal/modules",
+    "internal/remote_api",
+    "internal/urlfetch",
+    "urlfetch"
+  ]
   revision = "4a4468ece617fc8205e99368fa2200e9d1fad421"
   version = "v1.3.0"
 
@@ -172,6 +218,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4a6e5b98747278f2c2be95f489e7aed2710b82c99e7857087c6eb222917dba6c"
+  inputs-digest = "e94795c347f48a9ee90b68d79ae43762c0504d74ca19276f92b7c394faeab698"
   solver-name = "gps-cdcl"
   solver-version = 1

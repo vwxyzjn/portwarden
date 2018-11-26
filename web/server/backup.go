@@ -1,4 +1,4 @@
-package models
+package server
 
 import (
 	"mime/multipart"
