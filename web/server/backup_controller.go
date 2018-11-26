@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/davecgh/go-spew/spew"
-	"golang.org/x/oauth2"
 
 	"github.com/gin-gonic/gin"
 	"github.com/vwxyzjn/portwarden"
@@ -47,18 +46,19 @@ func (ps *PortwardenServer) GetGoogleDriveLoginURLHandler(c *gin.Context) {
 }
 
 func (ps *PortwardenServer) GetGoogleDriveLoginHandler(c *gin.Context) {
-	code := c.Query("code")
-	if len(code) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": errors.New(ErrRetrievingOauthCode), "message": ""})
+	var gdc GoogleDriveCredentials
+	if err := c.ShouldBind(&gdc); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": errors.New(ErrRetrievingOauthCode), "message": err.Error()})
 		return
 	}
-	c.JSON(200, "Login Successful")
-	tok, err := ps.GoogleDriveAppConfig.Exchange(oauth2.NoContext, code)
+	spew.Dump(gdc)
+	tok, err := ps.GoogleDriveAppConfig.Exchange(ps.GoogleDriveContext, gdc.Code)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": errors.New(ErrRetrievingOauthCode), "message": err.Error()})
 		return
 	}
 	spew.Dump(tok)
+	c.JSON(200, "Login Successful")
 	return
 }
 
