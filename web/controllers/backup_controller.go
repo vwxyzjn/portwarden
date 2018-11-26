@@ -1,14 +1,20 @@
 package controllers
 
 import (
+	"context"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
 
 	"github.com/davecgh/go-spew/spew"
+	"golang.org/x/oauth2/google"
+	drive "google.golang.org/api/drive/v3"
 
 	"github.com/gin-gonic/gin"
 	"github.com/vwxyzjn/portwarden"
 	"github.com/vwxyzjn/portwarden/web/models"
+	"github.com/vwxyzjn/portwarden/web/utils"
 )
 
 func EncryptBackupHandler(c *gin.Context) {
@@ -33,8 +39,21 @@ func EncryptBackupHandler(c *gin.Context) {
 }
 
 //TODO: GoogleDriveHandler() will return Json with the google login url
+// Not sure if it's supposed to call UploadFile() directly
 func GoogleDriveHandler(c *gin.Context) {
-	//client := getClient(ctx, config)
+	ctx := context.Background()
+	credential, err := ioutil.ReadFile("credentials.json")
+	if err != nil {
+		log.Fatalf("Unable to read client secret file: %v", err)
+	}
+	config, err := google.ConfigFromJSON(credential, drive.DriveScope)
+	if err != nil {
+		log.Fatalf("Unable to parse client secret file to config: %v", err)
+	}
+	client := utils.GetClient(ctx, config)
+	token := utils.GetTokenFromWeb(config)
+	// TODO: Assign encrypted data to fileBytes before uploadFile is called
+	//UploadFile(fileBytes, client, token)
 
 }
 
