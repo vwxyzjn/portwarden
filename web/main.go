@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	credential, err := ioutil.ReadFile("credentials.json")
+	credential, err := ioutil.ReadFile("portwardenCredentials.json")
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}

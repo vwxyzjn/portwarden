@@ -29,7 +29,7 @@ func GetClient(ctx context.Context, config *oauth2.Config) *http.Client {
 	tok, err := tokenFromFile(cacheFile)
 	if err != nil {
 		tok = GetTokenFromWeb(config)
-		saveToken(cacheFile, tok)
+		SaveToken(cacheFile, tok)
 	}
 	return config.Client(ctx, tok)
 }
@@ -81,7 +81,7 @@ func tokenFromFile(file string) (*oauth2.Token, error) {
 
 // saveToken uses a file path to create a file and store the
 // token in it.
-func saveToken(file string, token *oauth2.Token) {
+func SaveToken(file string, token *oauth2.Token) {
 	fmt.Printf("Saving credential file to: %s\n", file)
 	f, err := os.Create(file)
 	if err != nil {

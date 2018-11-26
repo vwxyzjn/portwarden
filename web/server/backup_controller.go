@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -9,6 +10,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/vwxyzjn/portwarden"
+)
+
+const (
+	ErrRetrievingOauthCode = "error retrieving oauth login credentials; try again"
 )
 
 func EncryptBackupHandler(c *gin.Context) {
@@ -34,10 +39,26 @@ func EncryptBackupHandler(c *gin.Context) {
 
 //TODO: GoogleDriveHandler() will return Json with the google login url
 // Not sure if it's supposed to call UploadFile() directly
-func (ps *PortwardenServer) GoogleDriveLoginHandler(c *gin.Context) {
+func (ps *PortwardenServer) GetGoogleDriveLoginURLHandler(c *gin.Context) {
 	c.JSON(200, gin.H{
-		"login_url": ps.GoogleDriveAppConfig.AuthCodeURL("state-token", oauth2.AccessTypeOffline),
+		"login_url": ps.GoogleDriveAppConfig.AuthCodeURL("state-token"),
 	})
+	return
+}
+
+func (ps *PortwardenServer) GetGoogleDriveLoginHandler(c *gin.Context) {
+	code := c.Query("code")
+	if len(code) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": errors.New(ErrRetrievingOauthCode), "message": ""})
+		return
+	}
+	c.JSON(200, "Login Successful")
+	tok, err := ps.GoogleDriveAppConfig.Exchange(oauth2.NoContext, code)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": errors.New(ErrRetrievingOauthCode), "message": err.Error()})
+		return
+	}
+	spew.Dump(tok)
 	return
 }
 

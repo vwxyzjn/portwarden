@@ -40,7 +40,8 @@ func (ps *PortwardenServer) Run() {
 
 	ps.Router.POST("/encrypt", EncryptBackupHandler)
 	ps.Router.POST("/decrypt", DecryptBackupHandler)
-	ps.Router.GET("/gdrive/login", ps.GoogleDriveLoginHandler)
+	ps.Router.GET("/gdrive/loginUrl", ps.GetGoogleDriveLoginURLHandler)
+	ps.Router.GET("/gdrive/login", ps.GetGoogleDriveLoginHandler)
 
 	ps.Router.Run(":" + strconv.Itoa(ps.Port))
 }
