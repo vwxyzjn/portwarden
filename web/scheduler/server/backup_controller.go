@@ -3,8 +3,10 @@ package server
 import (
 	"net/http"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/gin-gonic/gin"
 	"github.com/vwxyzjn/portwarden"
+	"golang.org/x/oauth2"
 )
 
 const (
@@ -33,7 +35,7 @@ func EncryptBackupHandler(c *gin.Context) {
 // Not sure if it's supposed to call UploadFile() directly
 func (ps *PortwardenServer) GetGoogleDriveLoginURLHandler(c *gin.Context) {
 	c.JSON(200, gin.H{
-		"login_url": ps.GoogleDriveAppConfig.AuthCodeURL("state-token"),
+		"login_url": ps.GoogleDriveAppConfig.AuthCodeURL("state-token", oauth2.AccessTypeOffline, oauth2.ApprovalForce),
 	})
 	return
 }
@@ -49,7 +51,8 @@ func (ps *PortwardenServer) GetGoogleDriveLoginHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrRetrievingOauthCode})
 		return
 	}
-	GoogleDriveClient := ps.GoogleDriveAppConfig.Client(ps.GoogleDriveContext, tok)
+	spew.Dump(tok)
+	GoogleDriveClient := ps.GoogleDriveAppConfig.Client(oauth2.NoContext, tok)
 	fileBytes := []byte("xixix")
 	err = UploadFile(fileBytes, GoogleDriveClient, tok)
 	if err != nil {

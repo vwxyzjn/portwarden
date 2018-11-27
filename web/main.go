@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 
-	"github.com/vwxyzjn/portwarden/web/server"
+	"github.com/vwxyzjn/portwarden/web/scheduler/server"
 )
 
 func main() {
