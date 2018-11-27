@@ -1,4 +1,4 @@
-package models
+package server
 
 import (
 	"mime/multipart"
@@ -19,4 +19,10 @@ type EncryptBackupInfo struct {
 type DecryptBackupInfo struct {
 	File       *multipart.FileHeader `form:"file"`
 	Passphrase string                `form:"passphrase"`
+}
+
+type GoogleDriveCredentials struct {
+	State string `form:"state"`
+	Code  string `form:"code"`
+	Scope string `form:"scope"`
 }
