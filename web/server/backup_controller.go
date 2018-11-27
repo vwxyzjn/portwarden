@@ -1,11 +1,7 @@
 package server
 
 import (
-	"errors"
-	"fmt"
 	"net/http"
-
-	"github.com/davecgh/go-spew/spew"
 
 	"github.com/gin-gonic/gin"
 	"github.com/vwxyzjn/portwarden"
@@ -21,14 +17,11 @@ func EncryptBackupHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ""})
 		return
 	}
-
-	spew.Dump(&ebi.BitwardenLoginCredentials)
 	sessionKey, err := portwarden.BWLoginGetSessionKey(&ebi.BitwardenLoginCredentials)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": sessionKey})
 		return
 	}
-	fmt.Println(sessionKey)
 	err = portwarden.CreateBackupFile(ebi.FileNamePrefix, ebi.Passphrase, sessionKey, BackupDefaultSleepMilliseconds)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": sessionKey})
@@ -48,16 +41,21 @@ func (ps *PortwardenServer) GetGoogleDriveLoginURLHandler(c *gin.Context) {
 func (ps *PortwardenServer) GetGoogleDriveLoginHandler(c *gin.Context) {
 	var gdc GoogleDriveCredentials
 	if err := c.ShouldBind(&gdc); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": errors.New(ErrRetrievingOauthCode), "message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrRetrievingOauthCode})
 		return
 	}
-	spew.Dump(gdc)
 	tok, err := ps.GoogleDriveAppConfig.Exchange(ps.GoogleDriveContext, gdc.Code)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": errors.New(ErrRetrievingOauthCode), "message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrRetrievingOauthCode})
 		return
 	}
-	spew.Dump(tok)
+	GoogleDriveClient := ps.GoogleDriveAppConfig.Client(ps.GoogleDriveContext, tok)
+	fileBytes := []byte("xixix")
+	err = UploadFile(fileBytes, GoogleDriveClient, tok)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrRetrievingOauthCode})
+		return
+	}
 	c.JSON(200, "Login Successful")
 	return
 }
@@ -71,6 +69,5 @@ func DecryptBackupHandler(c *gin.Context) {
 	}
 	if dbi.File, err = c.FormFile("file"); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ""})
-		spew.Dump(gin.H{"error": err.Error(), "message": ""})
 	}
 }
