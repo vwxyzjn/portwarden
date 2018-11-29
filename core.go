@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -48,6 +49,15 @@ type LoginCredentials struct {
 	Password string `json:"password"`
 	Method   int    `json:"method"`
 	Code     string `json:"code"`
+}
+
+func CreateBackupBytesUsingBitwardenLocalJSON(dataJson []byte, BITWARDENCLI_APPDATA_DIR, passphrase, sessionKey string, sleepMilliseconds int) ([]byte, error) {
+	// Put data.json in the BITWARDENCLI_APPDATA_DIR
+	defer BWLogout()
+	if err := ioutil.WriteFile(filepath.Join(BITWARDENCLI_APPDATA_DIR, "data.json"), dataJson, 0644); err != nil {
+		return nil, err
+	}
+	return CreateBackupBytes(passphrase, sessionKey, sleepMilliseconds)
 }
 
 func CreateBackupFile(fileName, passphrase, sessionKey string, sleepMilliseconds int) error {

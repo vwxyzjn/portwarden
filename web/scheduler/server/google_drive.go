@@ -182,51 +182,37 @@ func UploadFile(fileBytes []byte, client *http.Client, token *oauth2.Token) erro
 	return nil
 }
 
-func GetUserInfo(client *http.Client, token *oauth2.Token) error {
+func GetUserInfo(token *oauth2.Token) ([]byte, error) {
 
 	postURL := "https://www.googleapis.com/oauth2/v2/userinfo"
 
 	// Extract auth or access token from Token file
 	// See https://godoc.org/gnolang.org/x/oauth2#Token
-	authToken := token.AccessToken
+	// authToken := token.AccessToken
 
 	// Post to Drive with RESTful method
 	request, err := http.NewRequest("GET", postURL, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	request.Header.Add("Host", "www.googleapis.com")
-	request.Header.Add("Authorization", "Bearer "+authToken)
+	request.Header.Add("Authorization", "Bearer "+"authToken")
 	request.Header.Add("Content-Length", strconv.FormatInt(request.ContentLength, 10))
 
 	// For debugging
 	//fmt.Println(request)
-	response, err := client.Do(request)
+	GoogleDriveClient := GoogleDriveAppConfig.Client(oauth2.NoContext, token)
+	response, err := GoogleDriveClient.Do(request)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	defer response.Body.Close()
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	// Output the response from Drive API
-	fmt.Println(string(body))
-
-	// // Extract the uploaded file ID to execute further customization like update the file
-	// jsonAPIreply, err := jason.NewObjectFromBytes(body)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// uploadedFileID, err := jsonAPIreply.GetString("id")
-	// if err != nil {
-	// 	return err
-	// }
-	// fmt.Println("Uploaded file ID : ", uploadedFileID)
-	return nil
+	return body, nil
 }
 
 /*

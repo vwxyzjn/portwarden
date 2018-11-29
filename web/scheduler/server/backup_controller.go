@@ -51,14 +51,13 @@ func (ps *PortwardenServer) GetGoogleDriveLoginHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrRetrievingOauthCode})
 		return
 	}
-	spew.Dump(tok)
-	GoogleDriveClient := ps.GoogleDriveAppConfig.Client(oauth2.NoContext, tok)
-	// fileBytes := []byte("xixix")
-	err = GetUserInfo(GoogleDriveClient, tok)
+	// pu := &PortwardenUser{GoogleToken: tok}
+	body, err := GetUserInfo(tok)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrRetrievingOauthCode})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ""})
 		return
 	}
+	spew.Dump(string(body))
 	c.JSON(200, "Login Successful")
 	return
 }

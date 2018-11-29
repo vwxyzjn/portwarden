@@ -8,9 +8,9 @@ import (
 
 func main() {
 	var cnf = &config.Config{
-		Broker:        "amqp://guest:guest@localhost:5672/",
+		Broker:        "redis://localhost:6379/",
 		DefaultQueue:  "machinery_tasks",
-		ResultBackend: "amqp://guest:guest@localhost:5672/",
+		ResultBackend: "redis://localhost:6379/",
 		AMQP: &config.AMQPConfig{
 			Exchange:     "machinery_exchange",
 			ExchangeType: "direct",
@@ -23,7 +23,7 @@ func main() {
 		panic(err)
 	}
 	server.RegisterTasks(map[string]interface{}{
-		"CreateBackupBytes": portwarden.CreateBackupBytes,
+		"CreateBackupBytesUsingBitwardenLocalJSON": portwarden.CreateBackupBytesUsingBitwardenLocalJSON,
 	})
 	worker := server.NewWorker("worker_name", 0)
 	err = worker.Launch()
