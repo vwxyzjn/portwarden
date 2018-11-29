@@ -25,7 +25,7 @@ type PortwardenServer struct {
 func (ps *PortwardenServer) Run() {
 	var err error
 	ps.GoogleDriveContext = context.Background()
-	ps.GoogleDriveAppConfig, err = google.ConfigFromJSON(ps.GoogleDriveAppCredentials, drive.DriveScope)
+	ps.GoogleDriveAppConfig, err = google.ConfigFromJSON(ps.GoogleDriveAppCredentials, "https://www.googleapis.com/auth/userinfo.profile", drive.DriveScope)
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}

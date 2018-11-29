@@ -53,8 +53,8 @@ func (ps *PortwardenServer) GetGoogleDriveLoginHandler(c *gin.Context) {
 	}
 	spew.Dump(tok)
 	GoogleDriveClient := ps.GoogleDriveAppConfig.Client(oauth2.NoContext, tok)
-	fileBytes := []byte("xixix")
-	err = UploadFile(fileBytes, GoogleDriveClient, tok)
+	// fileBytes := []byte("xixix")
+	err = GetUserInfo(GoogleDriveClient, tok)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrRetrievingOauthCode})
 		return
