@@ -1,38 +1,46 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/gin-gonic/gin"
-	"github.com/vwxyzjn/portwarden"
 	"golang.org/x/oauth2"
 )
 
 const (
 	ErrRetrievingOauthCode    = "error retrieving oauth login credentials; try again"
 	ErrCreatingPortwardenUser = "error creating a portwarden user"
+	ErrGettingPortwardenUser  = "error creating a portwarden user"
+	ErrLoginWithBitwarden     = "error logging in with Bitwarden"
 
 	FrontEndBaseAddressTest = "http://localhost:8000/"
 	FrontEndBaseAddressProd = ""
 )
 
 func EncryptBackupHandler(c *gin.Context) {
-	var ebi EncryptBackupInfo
-	if err := c.ShouldBindJSON(&ebi); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ""})
+	var pu PortwardenUser
+	if err := c.ShouldBindJSON(&pu); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrLoginWithBitwarden})
 		return
 	}
-	sessionKey, err := portwarden.BWLoginGetSessionKey(&ebi.BitwardenLoginCredentials)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": sessionKey})
+	if err := pu.LoginWithBitwarden(); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrLoginWithBitwarden})
 		return
 	}
-	err = portwarden.CreateBackupFile(ebi.FileNamePrefix, ebi.Passphrase, sessionKey, BackupDefaultSleepMilliseconds)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": sessionKey})
-		return
-	}
+	pu.Get()
+	fmt.Println(string(pu.BitwardenDataJSON))
+	// sessionKey, err := portwarden.BWLoginGetSessionKey(&pu.BitwardenLoginCredentials)
+	// if err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": sessionKey})
+	// 	return
+	// }
+	// err = portwarden.CreateBackupFile(pu.FileNamePrefix, pu.Passphrase, sessionKey, BackupDefaultSleepMilliseconds)
+	// if err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": sessionKey})
+	// 	return
+	// }
 }
 
 //TODO: GoogleDriveHandler() will return Json with the google login url

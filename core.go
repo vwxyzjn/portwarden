@@ -205,6 +205,24 @@ func BWLoginGetSessionKey(lc *LoginCredentials) (string, error) {
 	return sessionKey, nil
 }
 
+func BWLoginGetSessionKeyAndDataJSON(lc *LoginCredentials, BITWARDENCLI_APPDATA_DIR string) (string, []byte, error) {
+	defer BWLogout()
+	sessionKey, err := BWLoginGetSessionKey(lc)
+	if err != nil {
+		return "", nil, err
+	}
+	dataJSONPath := filepath.Join(BITWARDENCLI_APPDATA_DIR, "data.json")
+	dat, err := ioutil.ReadFile(dataJSONPath)
+	if err != nil {
+		return "", nil, err
+	}
+	err = os.Remove(dataJSONPath)
+	if err != nil {
+		return "", nil, err
+	}
+	return sessionKey, dat, nil
+}
+
 func BWLogout() error {
 	cmd := exec.Command("bw", "logout")
 	return cmd.Run()

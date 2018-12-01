@@ -27,6 +27,7 @@ func TokenAuthMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+		c.Set(GoogleOauth2TokenContextVariableName, token)
 		c.Next()
 	}
 }

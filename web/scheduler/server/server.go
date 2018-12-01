@@ -3,6 +3,7 @@ package server
 import (
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gin-contrib/cors"
@@ -17,6 +18,8 @@ import (
 var (
 	GoogleDriveAppConfig *oauth2.Config
 	RedisClient          *redis.Client
+
+	BITWARDENCLI_APPDATA_DIR string
 )
 
 type PortwardenServer struct {
@@ -49,6 +52,9 @@ func (ps *PortwardenServer) Run() {
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}
+
+	// Get Bitwarden CLI Env Var
+	BITWARDENCLI_APPDATA_DIR = os.Getenv("BITWARDENCLI_APPDATA_DIR")
 
 	ps.Router = gin.Default()
 	ps.Router.Use(cors.Default())

@@ -16,7 +16,7 @@ const (
 	BackupDefaultSleepMilliseconds = 300
 )
 
-type EncryptBackupInfo struct {
+type BackupSetting struct {
 	FileNamePrefix            string                      `json:"filename_prefix"`
 	Passphrase                string                      `json:"passphrase"`
 	BitwardenLoginCredentials portwarden.LoginCredentials `json:"bitwarden_login_credentials"`
@@ -45,11 +45,13 @@ type GoogleDriveCredentials struct {
 }
 
 type PortwardenUser struct {
-	Email               string
-	GoogleUserInfo      GoogleUserInfo
-	GoogleToken         *oauth2.Token
-	BitwardenDataJSON   []byte
-	BitwardenSessionKey string
+	Email                     string                       `json:"email"`
+	BitwardenDataJSON         []byte                       `json:"bitwarden_data_json"`
+	BitwardenSessionKey       string                       `json:"bitwarden_session_key"`
+	BackupSetting             BackupSetting                `json:"backup_setting"`
+	BitwardenLoginCredentials *portwarden.LoginCredentials `json:"bitwarden_login_credentials"` // Not stored in Redis
+	GoogleUserInfo            GoogleUserInfo
+	GoogleToken               *oauth2.Token
 }
 
 type GoogleUserInfo struct {
@@ -90,6 +92,51 @@ func (pu *PortwardenUser) CreateWithGoogle() error {
 		return err
 	}
 	pu.Email = pu.GoogleUserInfo.Email
+	err = pu.Set()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (pu *PortwardenUser) LoginWithBitwarden() error {
+	opu := PortwardenUser{Email: pu.Email}
+	err := opu.Get()
+	if err != nil {
+		return err
+	}
+	opu.BitwardenSessionKey, opu.BitwardenDataJSON, err = portwarden.BWLoginGetSessionKeyAndDataJSON(pu.BitwardenLoginCredentials, BITWARDENCLI_APPDATA_DIR)
+	if err != nil {
+		return err
+	}
+	err = opu.Set()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (pu *PortwardenUser) Set() error {
+	pu.BitwardenLoginCredentials = &portwarden.LoginCredentials{}
+	puJson, err := json.Marshal(pu)
+	if err != nil {
+		return err
+	}
+	err = RedisClient.Set(pu.Email, string(puJson), 0).Err()
+	if err != nil {
+		panic(err)
+	}
+	return nil
+}
+
+func (pu *PortwardenUser) Get() error {
+	val, err := RedisClient.Get(pu.Email).Result()
+	if err != nil {
+		return err
+	}
+	if err := json.Unmarshal([]byte(val), &pu); err != nil {
+		return err
+	}
 	return nil
 }
 
