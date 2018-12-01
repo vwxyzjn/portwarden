@@ -33,7 +33,7 @@ type GoogleDriveCredentials struct {
 }
 
 type PortwardenUser struct {
-	ID                  string
+	Email               string
 	GoogleUserInfo      GoogleUserInfo
 	GoogleToken         *oauth2.Token
 	BitwardenDataJSON   []byte
@@ -42,6 +42,7 @@ type PortwardenUser struct {
 
 type GoogleUserInfo struct {
 	ID         string `json:"id"`
+	Email      string `json:"email"`
 	Name       string `json:"name"`
 	GivenName  string `json:"given_name"`
 	FamilyName string `json:"family_name"`
@@ -76,6 +77,6 @@ func (pu *PortwardenUser) CreateWithGoogle() error {
 	if err := json.Unmarshal(body, &pu.GoogleUserInfo); err != nil {
 		return err
 	}
-	pu.ID = pu.GoogleUserInfo.ID
+	pu.Email = pu.GoogleUserInfo.Email
 	return nil
 }
