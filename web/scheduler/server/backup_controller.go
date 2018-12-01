@@ -46,9 +46,9 @@ func (ps *PortwardenServer) GetGoogleDriveLoginHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrRetrievingOauthCode})
 		return
 	}
-	tok, err := ps.GoogleDriveAppConfig.Exchange(ps.GoogleDriveContext, gdc.Code)
+	tok, err := GoogleDriveAppConfig.Exchange(oauth2.NoContext, gdc.Code)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrRetrievingOauthCode})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error(), "message": "Login failure"})
 		return
 	}
 	// pu := &PortwardenUser{GoogleToken: tok}

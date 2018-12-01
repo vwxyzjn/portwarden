@@ -31,7 +31,7 @@ type PortwardenServer struct {
 func (ps *PortwardenServer) Run() {
 	var err error
 	ps.GoogleDriveContext = context.Background()
-	ps.GoogleDriveAppConfig, err = google.ConfigFromJSON(ps.GoogleDriveAppCredentials, "https://www.googleapis.com/auth/userinfo.profile", drive.DriveScope)
+	ps.GoogleDriveAppConfig, err = google.ConfigFromJSON(ps.GoogleDriveAppCredentials, "https://www.googleapis.com/auth/userinfo.profile", "email", drive.DriveScope)
 	GoogleDriveAppConfig = ps.GoogleDriveAppConfig // quick hack
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
@@ -61,7 +61,6 @@ func (ps *PortwardenServer) Run() {
 	ps.Router.POST("/decrypt", DecryptBackupHandler)
 	ps.Router.GET("/gdrive/loginUrl", ps.GetGoogleDriveLoginURLHandler)
 
-	ps.Router.Use(TokenAuthMiddleware())
 	ps.Router.GET("/gdrive/login", ps.GetGoogleDriveLoginHandler)
 
 	ps.Router.Run(":" + strconv.Itoa(ps.Port))
