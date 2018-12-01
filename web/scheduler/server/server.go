@@ -39,7 +39,7 @@ func (ps *PortwardenServer) Run() {
 	// ps.GoogleClient = GetClient(ps.GoogleDriveContext, ps.GoogleDriveAppConfig)
 
 	// Setup Redis
-	RedisClient := redis.NewClient(&redis.Options{
+	RedisClient = redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "", // no password set
 		DB:       0,  // use default DB
