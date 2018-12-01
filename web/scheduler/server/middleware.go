@@ -1,11 +1,11 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/oauth2"
 )
 
 const (
@@ -14,23 +14,19 @@ const (
 
 func TokenAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		fmt.Println("middleware called")
-		code := c.Query("code")
+		var token string
+		HeaderAuthorization, ok := c.Request.Header["Authorization"]
+		if ok && len(HeaderAuthorization) >= 1 {
+			token = HeaderAuthorization[0]
+			token = strings.TrimPrefix(token, "Bearer ")
+		}
 
-		tok, err := GoogleDriveAppConfig.Exchange(oauth2.NoContext, code)
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error(), "message": "Login failure"})
+		verified, err := VerifyGoogleAccessToekn(token)
+		if err != nil || !verified {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error(), "message": "Verification status is " + strconv.FormatBool(verified)})
 			c.Abort()
 			return
 		}
-		_, err = GetUserInfo(tok)
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error(), "message": "Login failure"})
-			c.Abort()
-			return
-		}
-		c.Set(GoogleOauth2TokenContextVariableName, tok)
-		fmt.Println("middleware passed")
 		c.Next()
 	}
 }

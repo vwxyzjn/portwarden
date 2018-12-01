@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
@@ -24,6 +25,17 @@ type EncryptBackupInfo struct {
 type DecryptBackupInfo struct {
 	File       *multipart.FileHeader `form:"file"`
 	Passphrase string                `form:"passphrase"`
+}
+
+type GoogleTokenVerifyResponse struct {
+	IssuedTo      string `json:"issued_to"`
+	Audience      string `json:"audience"`
+	UserID        string `json:"user_id"`
+	Scope         string `json:"scope"`
+	ExpiresIn     int64  `json:"expires_in"`
+	Email         string `json:"email"`
+	VerifiedEmail bool   `json:"verified_email"`
+	AccessType    string `json:"access_type"`
 }
 
 type GoogleDriveCredentials struct {
@@ -79,4 +91,25 @@ func (pu *PortwardenUser) CreateWithGoogle() error {
 	}
 	pu.Email = pu.GoogleUserInfo.Email
 	return nil
+}
+
+func VerifyGoogleAccessToekn(access_token string) (bool, error) {
+	url := "https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=" + access_token
+	response, err := http.Get(url)
+	defer response.Body.Close()
+	if err != nil {
+		return false, err
+	}
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return false, err
+	}
+	var gtvr GoogleTokenVerifyResponse
+	if err := json.Unmarshal(body, &gtvr); err != nil {
+		return false, err
+	}
+	if !gtvr.VerifiedEmail {
+		return false, errors.New(string(body))
+	}
+	return true, nil
 }

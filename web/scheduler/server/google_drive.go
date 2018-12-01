@@ -182,39 +182,6 @@ func UploadFile(fileBytes []byte, client *http.Client, token *oauth2.Token) erro
 	return nil
 }
 
-func GetUserInfo(token *oauth2.Token) ([]byte, error) {
-
-	postURL := "https://www.googleapis.com/oauth2/v2/userinfo"
-
-	// Extract auth or access token from Token file
-	// See https://godoc.org/gnolang.org/x/oauth2#Token
-	// authToken := token.AccessToken
-
-	// Post to Drive with RESTful method
-	request, err := http.NewRequest("GET", postURL, nil)
-	if err != nil {
-		return nil, err
-	}
-	request.Header.Add("Host", "www.googleapis.com")
-	request.Header.Add("Authorization", "Bearer "+"authToken")
-	request.Header.Add("Content-Length", strconv.FormatInt(request.ContentLength, 10))
-
-	// For debugging
-	//fmt.Println(request)
-	GoogleDriveClient := GoogleDriveAppConfig.Client(oauth2.NoContext, token)
-	response, err := GoogleDriveClient.Do(request)
-	if err != nil {
-		return nil, err
-	}
-
-	defer response.Body.Close()
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-	return body, nil
-}
-
 /*
 func main() {
 

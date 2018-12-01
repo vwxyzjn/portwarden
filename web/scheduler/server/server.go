@@ -57,11 +57,16 @@ func (ps *PortwardenServer) Run() {
 		http.ServeFile(c.Writer, c.Request, "index.html")
 	})
 
-	ps.Router.POST("/encrypt", EncryptBackupHandler)
 	ps.Router.POST("/decrypt", DecryptBackupHandler)
 	ps.Router.GET("/gdrive/loginUrl", ps.GetGoogleDriveLoginURLHandler)
 
 	ps.Router.GET("/gdrive/login", ps.GetGoogleDriveLoginHandler)
+
+	ps.Router.Use(TokenAuthMiddleware())
+	ps.Router.GET("/test/TokenAuthMiddleware", func(c *gin.Context) {
+		c.JSON(200, "success")
+	})
+	ps.Router.POST("/encrypt", EncryptBackupHandler)
 
 	ps.Router.Run(":" + strconv.Itoa(ps.Port))
 }

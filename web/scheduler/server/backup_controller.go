@@ -10,7 +10,11 @@ import (
 )
 
 const (
-	ErrRetrievingOauthCode = "error retrieving oauth login credentials; try again"
+	ErrRetrievingOauthCode    = "error retrieving oauth login credentials; try again"
+	ErrCreatingPortwardenUser = "error creating a portwarden user"
+
+	FrontEndBaseAddressTest = "http://localhost:8000/"
+	FrontEndBaseAddressProd = ""
 )
 
 func EncryptBackupHandler(c *gin.Context) {
@@ -51,14 +55,15 @@ func (ps *PortwardenServer) GetGoogleDriveLoginHandler(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error(), "message": "Login failure"})
 		return
 	}
-	// pu := &PortwardenUser{GoogleToken: tok}
-	body, err := GetUserInfo(tok)
+	pu := &PortwardenUser{GoogleToken: tok}
+	err = pu.CreateWithGoogle()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ""})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrCreatingPortwardenUser})
 		return
 	}
-	spew.Dump(string(body))
-	c.JSON(200, "Login Successful")
+
+	spew.Dump(pu)
+	c.Redirect(http.StatusMovedPermanently, FrontEndBaseAddressTest+"?access_token="+pu.GoogleToken.AccessToken)
 	return
 }
 
