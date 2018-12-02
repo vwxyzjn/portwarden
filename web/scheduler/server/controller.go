@@ -3,8 +3,8 @@ package server
 import (
 	"net/http"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/gin-gonic/gin"
+	"github.com/imdario/mergo"
 	"github.com/vwxyzjn/portwarden/web"
 	"golang.org/x/oauth2"
 )
@@ -31,26 +31,21 @@ func EncryptBackupHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrBindingFromGin})
 		return
 	}
-	if !pu.BackupSetting.WillSetupBackup {
-		c.JSON(http.StatusBadRequest, gin.H{"message": MsgSuccessfullyCancelledBackingUp})
-		return
-	}
 	opu.Email = pu.Email
 	if err := opu.Get(); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrGettingPortwardenUser})
 		return
 	}
+	mergo.Merge(&pu, opu)
 	if err := pu.LoginWithBitwarden(); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrLoginWithBitwarden})
 		return
 	}
-
-	opu.BackupSetting = pu.BackupSetting
-	if err := opu.SetupAutomaticBackup(nil); err != nil {
+	if err := pu.SetupAutomaticBackup(nil); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": MsgSuccessfullyCancelledBackingUp})
 		return
 	}
-	if err := opu.Set(); err != nil {
+	if err := pu.Set(); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrCreatingPortwardenUser})
 		return
 	}
@@ -106,8 +101,6 @@ func (ps *PortwardenServer) GetGoogleDriveLoginHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrCreatingPortwardenUser})
 		return
 	}
-
-	spew.Dump(pu)
 	c.Redirect(http.StatusMovedPermanently, FrontEndBaseAddressTest+"?access_token="+pu.GoogleToken.AccessToken)
 	return
 }

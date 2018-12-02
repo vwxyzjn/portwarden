@@ -3,7 +3,15 @@
 
 [[projects]]
   name = "cloud.google.com/go"
-  packages = ["compute/metadata","iam","internal/optional","internal/version","pubsub","pubsub/apiv1","pubsub/internal/distribution"]
+  packages = [
+    "compute/metadata",
+    "iam",
+    "internal/optional",
+    "internal/version",
+    "pubsub",
+    "pubsub/apiv1",
+    "pubsub/internal/distribution"
+  ]
   revision = "74b12019e2aa53ec27882158f59192d7cd6d1998"
   version = "v0.33.1"
 
@@ -15,7 +23,30 @@
 
 [[projects]]
   name = "github.com/RichardKnop/machinery"
-  packages = ["v1","v1/backends/amqp","v1/backends/dynamodb","v1/backends/eager","v1/backends/iface","v1/backends/memcache","v1/backends/mongo","v1/backends/redis","v1/backends/result","v1/brokers/amqp","v1/brokers/eager","v1/brokers/errs","v1/brokers/gcppubsub","v1/brokers/iface","v1/brokers/redis","v1/brokers/sqs","v1/common","v1/config","v1/log","v1/retry","v1/tasks","v1/tracing"]
+  packages = [
+    "v1",
+    "v1/backends/amqp",
+    "v1/backends/dynamodb",
+    "v1/backends/eager",
+    "v1/backends/iface",
+    "v1/backends/memcache",
+    "v1/backends/mongo",
+    "v1/backends/redis",
+    "v1/backends/result",
+    "v1/brokers/amqp",
+    "v1/brokers/eager",
+    "v1/brokers/errs",
+    "v1/brokers/gcppubsub",
+    "v1/brokers/iface",
+    "v1/brokers/redis",
+    "v1/brokers/sqs",
+    "v1/common",
+    "v1/config",
+    "v1/log",
+    "v1/retry",
+    "v1/tasks",
+    "v1/tracing"
+  ]
   revision = "21f6dd0def9983b08c773554c89f64b0176da3a2"
   version = "v1.5.3"
 
@@ -26,14 +57,45 @@
   version = "v1.2.0"
 
 [[projects]]
-  name = "github.com/antonholmquist/jason"
-  packages = ["."]
-  revision = "c23cef7eaa75a6a5b8810120e167bd590d8fd2ab"
-  version = "v1.0.0"
-
-[[projects]]
   name = "github.com/aws/aws-sdk-go"
-  packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/crr","aws/csm","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","internal/ini","internal/sdkio","internal/sdkrand","internal/sdkuri","internal/shareddefaults","private/protocol","private/protocol/json/jsonutil","private/protocol/jsonrpc","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/xml/xmlutil","service/dynamodb","service/dynamodb/dynamodbattribute","service/dynamodb/dynamodbiface","service/sqs","service/sqs/sqsiface","service/sts"]
+  packages = [
+    "aws",
+    "aws/awserr",
+    "aws/awsutil",
+    "aws/client",
+    "aws/client/metadata",
+    "aws/corehandlers",
+    "aws/credentials",
+    "aws/credentials/ec2rolecreds",
+    "aws/credentials/endpointcreds",
+    "aws/credentials/stscreds",
+    "aws/crr",
+    "aws/csm",
+    "aws/defaults",
+    "aws/ec2metadata",
+    "aws/endpoints",
+    "aws/request",
+    "aws/session",
+    "aws/signer/v4",
+    "internal/ini",
+    "internal/sdkio",
+    "internal/sdkrand",
+    "internal/sdkuri",
+    "internal/shareddefaults",
+    "private/protocol",
+    "private/protocol/json/jsonutil",
+    "private/protocol/jsonrpc",
+    "private/protocol/query",
+    "private/protocol/query/queryutil",
+    "private/protocol/rest",
+    "private/protocol/xml/xmlutil",
+    "service/dynamodb",
+    "service/dynamodb/dynamodbattribute",
+    "service/dynamodb/dynamodbiface",
+    "service/sqs",
+    "service/sqs/sqsiface",
+    "service/sts"
+  ]
   revision = "08df30d135d32f1eb21bb7754eb042aeca521a4b"
   version = "v1.15.84"
 
@@ -52,7 +114,14 @@
 [[projects]]
   branch = "master"
   name = "github.com/dsnet/compress"
-  packages = [".","bzip2","bzip2/internal/sais","internal","internal/errors","internal/prefix"]
+  packages = [
+    ".",
+    "bzip2",
+    "bzip2/internal/sais",
+    "internal",
+    "internal/errors",
+    "internal/prefix"
+  ]
   revision = "cc9eb1d7ad760af14e8f918698f745e80377af4f"
 
 [[projects]]
@@ -69,19 +138,41 @@
 
 [[projects]]
   name = "github.com/gin-gonic/gin"
-  packages = [".","binding","json","render"]
+  packages = [
+    ".",
+    "binding",
+    "json",
+    "render"
+  ]
   revision = "b869fe1415e4b9eb52f247441830d502aece2d4d"
   version = "v1.3.0"
 
 [[projects]]
   name = "github.com/go-redis/redis"
-  packages = [".","internal","internal/consistenthash","internal/hashtag","internal/pool","internal/proto","internal/singleflight","internal/util"]
+  packages = [
+    ".",
+    "internal",
+    "internal/consistenthash",
+    "internal/hashtag",
+    "internal/pool",
+    "internal/proto",
+    "internal/singleflight",
+    "internal/util"
+  ]
   revision = "b3d9bf10f6666b2ee5100a6f3f84f4caf3b4e37d"
   version = "v6.14.2"
 
 [[projects]]
   name = "github.com/golang/protobuf"
-  packages = ["proto","protoc-gen-go/descriptor","ptypes","ptypes/any","ptypes/duration","ptypes/empty","ptypes/timestamp"]
+  packages = [
+    "proto",
+    "protoc-gen-go/descriptor",
+    "ptypes",
+    "ptypes/any",
+    "ptypes/duration",
+    "ptypes/empty",
+    "ptypes/timestamp"
+  ]
   revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
   version = "v1.2.0"
 
@@ -93,7 +184,10 @@
 
 [[projects]]
   name = "github.com/gomodule/redigo"
-  packages = ["internal","redis"]
+  packages = [
+    "internal",
+    "redis"
+  ]
   revision = "9c11da706d9b7902c6da69c592f75637793fe121"
   version = "v2.0.0"
 
@@ -108,6 +202,12 @@
   packages = ["."]
   revision = "b001040cd31805261cbd978842099e326dfa857b"
   version = "v2.0.2"
+
+[[projects]]
+  name = "github.com/imdario/mergo"
+  packages = ["."]
+  revision = "9f23e2d6bd2a77f959b2bf6acdbefd708a83a4a4"
+  version = "v0.3.6"
 
 [[projects]]
   name = "github.com/jmespath/go-jmespath"
@@ -158,13 +258,20 @@
 
 [[projects]]
   name = "github.com/opentracing/opentracing-go"
-  packages = [".","ext","log"]
+  packages = [
+    ".",
+    "ext",
+    "log"
+  ]
   revision = "1949ddbfd147afd4d964a9f00b24eb291e0e7c38"
   version = "v1.0.2"
 
 [[projects]]
   name = "github.com/pierrec/lz4"
-  packages = [".","internal/xxh32"]
+  packages = [
+    ".",
+    "internal/xxh32"
+  ]
   revision = "635575b42742856941dbc767b44905bb9ba083f6"
   version = "v2.0.7"
 
@@ -188,13 +295,34 @@
 
 [[projects]]
   name = "github.com/ulikunitz/xz"
-  packages = [".","internal/hash","internal/xlog","lzma"]
+  packages = [
+    ".",
+    "internal/hash",
+    "internal/xlog",
+    "lzma"
+  ]
   revision = "0c6b41e72360850ca4f98dc341fd999726ea007f"
   version = "v0.5.4"
 
 [[projects]]
   name = "go.opencensus.io"
-  packages = [".","exemplar","internal","internal/tagencoding","plugin/ocgrpc","plugin/ochttp","plugin/ochttp/propagation/b3","stats","stats/internal","stats/view","tag","trace","trace/internal","trace/propagation","trace/tracestate"]
+  packages = [
+    ".",
+    "exemplar",
+    "internal",
+    "internal/tagencoding",
+    "plugin/ocgrpc",
+    "plugin/ochttp",
+    "plugin/ochttp/propagation/b3",
+    "stats",
+    "stats/internal",
+    "stats/view",
+    "tag",
+    "trace",
+    "trace/internal",
+    "trace/propagation",
+    "trace/tracestate"
+  ]
   revision = "b7bf3cdb64150a8c8c53b769fdeb2ba581bd4d4b"
   version = "v0.18.0"
 
@@ -207,19 +335,37 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["context","context/ctxhttp","http/httpguts","http2","http2/hpack","idna","internal/timeseries","trace"]
+  packages = [
+    "context",
+    "context/ctxhttp",
+    "http/httpguts",
+    "http2",
+    "http2/hpack",
+    "idna",
+    "internal/timeseries",
+    "trace"
+  ]
   revision = "adae6a3d119ae4890b46832a2e88a95adc62b8e7"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/oauth2"
-  packages = [".","google","internal","jws","jwt"]
+  packages = [
+    ".",
+    "google",
+    "internal",
+    "jws",
+    "jwt"
+  ]
   revision = "f42d05182288abf10faef86d16c0d07b8d40ea2d"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sync"
-  packages = ["errgroup","semaphore"]
+  packages = [
+    "errgroup",
+    "semaphore"
+  ]
   revision = "42b317875d0fa942474b76e1b46a6060d720ae6e"
 
 [[projects]]
@@ -230,31 +376,107 @@
 
 [[projects]]
   name = "golang.org/x/text"
-  packages = ["collate","collate/build","internal/colltab","internal/gen","internal/tag","internal/triegen","internal/ucd","language","secure/bidirule","transform","unicode/bidi","unicode/cldr","unicode/norm","unicode/rangetable"]
+  packages = [
+    "collate",
+    "collate/build",
+    "internal/colltab",
+    "internal/gen",
+    "internal/tag",
+    "internal/triegen",
+    "internal/ucd",
+    "language",
+    "secure/bidirule",
+    "transform",
+    "unicode/bidi",
+    "unicode/cldr",
+    "unicode/norm",
+    "unicode/rangetable"
+  ]
   revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
   version = "v0.3.0"
 
 [[projects]]
   branch = "master"
   name = "google.golang.org/api"
-  packages = ["drive/v2","gensupport","googleapi","googleapi/internal/uritemplates","googleapi/transport","internal","iterator","option","support/bundler","transport","transport/grpc","transport/http","transport/http/internal/propagation"]
+  packages = [
+    "drive/v2",
+    "gensupport",
+    "googleapi",
+    "googleapi/internal/uritemplates",
+    "googleapi/transport",
+    "internal",
+    "iterator",
+    "option",
+    "support/bundler",
+    "transport",
+    "transport/grpc",
+    "transport/http",
+    "transport/http/internal/propagation"
+  ]
   revision = "83a9d304b1e613fc253e1e2710778642fe81af53"
 
 [[projects]]
   name = "google.golang.org/appengine"
-  packages = [".","internal","internal/app_identity","internal/base","internal/datastore","internal/log","internal/modules","internal/remote_api","internal/socket","internal/urlfetch","socket","urlfetch"]
+  packages = [
+    ".",
+    "internal",
+    "internal/app_identity",
+    "internal/base",
+    "internal/datastore",
+    "internal/log",
+    "internal/modules",
+    "internal/remote_api",
+    "internal/socket",
+    "internal/urlfetch",
+    "socket",
+    "urlfetch"
+  ]
   revision = "4a4468ece617fc8205e99368fa2200e9d1fad421"
   version = "v1.3.0"
 
 [[projects]]
   branch = "master"
   name = "google.golang.org/genproto"
-  packages = ["googleapis/api/annotations","googleapis/iam/v1","googleapis/pubsub/v1","googleapis/rpc/status","protobuf/field_mask"]
+  packages = [
+    "googleapis/api/annotations",
+    "googleapis/iam/v1",
+    "googleapis/pubsub/v1",
+    "googleapis/rpc/status",
+    "protobuf/field_mask"
+  ]
   revision = "31ac5d88444a9e7ad18077db9a165d793ad06a2e"
 
 [[projects]]
   name = "google.golang.org/grpc"
-  packages = [".","balancer","balancer/base","balancer/roundrobin","codes","connectivity","credentials","credentials/oauth","encoding","encoding/proto","grpclog","internal","internal/backoff","internal/channelz","internal/envconfig","internal/grpcrand","internal/transport","keepalive","metadata","naming","peer","resolver","resolver/dns","resolver/passthrough","stats","status","tap"]
+  packages = [
+    ".",
+    "balancer",
+    "balancer/base",
+    "balancer/roundrobin",
+    "codes",
+    "connectivity",
+    "credentials",
+    "credentials/oauth",
+    "encoding",
+    "encoding/proto",
+    "grpclog",
+    "internal",
+    "internal/backoff",
+    "internal/channelz",
+    "internal/envconfig",
+    "internal/grpcrand",
+    "internal/transport",
+    "keepalive",
+    "metadata",
+    "naming",
+    "peer",
+    "resolver",
+    "resolver/dns",
+    "resolver/passthrough",
+    "stats",
+    "status",
+    "tap"
+  ]
   revision = "2e463a05d100327ca47ac218281906921038fd95"
   version = "v1.16.0"
 
@@ -267,7 +489,13 @@
 [[projects]]
   branch = "v2"
   name = "gopkg.in/mgo.v2"
-  packages = [".","bson","internal/json","internal/sasl","internal/scram"]
+  packages = [
+    ".",
+    "bson",
+    "internal/json",
+    "internal/sasl",
+    "internal/scram"
+  ]
   revision = "9856a29383ce1c59f308dd1cf0363a79b5bef6b5"
 
 [[projects]]
@@ -285,6 +513,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d622028d481381214ed075bf271e699c86fc8f22690364f507e3d82def387ea8"
+  inputs-digest = "d7e60fff4e12704fe15d11a18730ac1a45c45013ff52c41872a5852c517a1199"
   solver-name = "gps-cdcl"
   solver-version = 1

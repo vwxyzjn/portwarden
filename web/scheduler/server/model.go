@@ -105,16 +105,8 @@ func (pu *PortwardenUser) CreateWithGoogle() error {
 func (pu *PortwardenUser) LoginWithBitwarden() error {
 	web.GlobalMutex.Lock()
 	defer web.GlobalMutex.Unlock()
-	opu := PortwardenUser{Email: pu.Email}
-	err := opu.Get()
-	if err != nil {
-		return err
-	}
-	opu.BitwardenSessionKey, opu.BitwardenDataJSON, err = portwarden.BWLoginGetSessionKeyAndDataJSON(pu.BitwardenLoginCredentials, web.BITWARDENCLI_APPDATA_DIR)
-	if err != nil {
-		return err
-	}
-	err = opu.Set()
+	var err error
+	pu.BitwardenSessionKey, pu.BitwardenDataJSON, err = portwarden.BWLoginGetSessionKeyAndDataJSON(pu.BitwardenLoginCredentials, web.BITWARDENCLI_APPDATA_DIR)
 	if err != nil {
 		return err
 	}
