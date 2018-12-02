@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/vwxyzjn/portwarden"
 	"github.com/vwxyzjn/portwarden/web"
@@ -35,5 +36,7 @@ func BackupToGoogleDrive(email string) error {
 	if err != nil {
 		return err
 	}
+	eta := time.Now().UTC().Add(time.Second * time.Duration(pu.BackupSetting.BackupFrequencySeconds))
+	pu.SetupAutomaticBackup(&eta)
 	return nil
 }

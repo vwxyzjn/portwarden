@@ -7,6 +7,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/RichardKnop/machinery/v1/tasks"
 	"github.com/vwxyzjn/portwarden"
@@ -15,8 +16,8 @@ import (
 )
 
 type BackupSetting struct {
-	FileNamePrefix string `json:"filename_prefix"`
-	Passphrase     string `json:"passphrase"`
+	Passphrase             string `json:"passphrase"`
+	BackupFrequencySeconds int    `json:"backup_frequency_seconds"`
 }
 
 type DecryptBackupInfo struct {
@@ -113,7 +114,7 @@ func (pu *PortwardenUser) LoginWithBitwarden() error {
 	return nil
 }
 
-func (pu *PortwardenUser) SetupAutomaticBackup() error {
+func (pu *PortwardenUser) SetupAutomaticBackup(eta *time.Time) error {
 	signature := &tasks.Signature{
 		Name: "BackupToGoogleDrive",
 		Args: []tasks.Arg{
@@ -122,6 +123,8 @@ func (pu *PortwardenUser) SetupAutomaticBackup() error {
 				Value: pu.Email,
 			},
 		},
+		ETA:        eta,
+		RetryCount: web.MachineryRetryCount,
 	}
 	_, err := web.MachineryServer.SendTask(signature)
 	if err != nil {

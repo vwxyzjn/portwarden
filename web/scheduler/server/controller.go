@@ -38,7 +38,7 @@ func EncryptBackupHandler(c *gin.Context) {
 		return
 	}
 	opu.BackupSetting = pu.BackupSetting
-	if err := opu.SetupAutomaticBackup(); err != nil {
+	if err := opu.SetupAutomaticBackup(nil); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrSettingupBackup})
 		return
 	}
