@@ -93,17 +93,23 @@ func SaveToken(file string, token *oauth2.Token) {
 
 // UploadFile upload the fileBytes to Google Drive's portwarden folder
 // https://gist.github.com/tzmartin/f5732091783752660b671c20479f519a
-func UploadFile(fileBytes []byte, token *oauth2.Token) error {
-	client := web.GoogleDriveAppConfig.Client(oauth2.NoContext, token)
+func UploadFile(fileBytes []byte, token *oauth2.Token) (*oauth2.Token, error) {
+	// Get updated access token
+	tokenSource := web.GoogleDriveAppConfig.TokenSource(oauth2.NoContext, token)
+	newToken, err := tokenSource.Token()
+	if err != nil {
+		return nil, err
+	}
+	client := web.GoogleDriveAppConfig.Client(oauth2.NoContext, newToken)
 	srv, err := drive.New(client)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	mimeType := http.DetectContentType(fileBytes)
 
 	parentId, err := GetOrCreateFolder(srv, web.PortwardenGoogleDriveBackupFolderName)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	f := &drive.File{Title: time.Now().Format("01-02-2006") + ".portwarden", MimeType: mimeType}
@@ -114,10 +120,10 @@ func UploadFile(fileBytes []byte, token *oauth2.Token) error {
 
 	_, err = srv.Files.Insert(f).Media(bytes.NewReader(fileBytes)).Do()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return newToken, nil
 }
 
 func GetOrCreateFolder(srv *drive.Service, folderName string) (string, error) {

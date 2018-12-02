@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/vwxyzjn/portwarden"
@@ -25,7 +24,6 @@ func BackupToGoogleDrive(email string) error {
 	web.GlobalMutex.Lock()
 	defer web.GlobalMutex.Unlock()
 	pu := server.PortwardenUser{Email: email}
-	fmt.Println(pu.Email)
 	err := pu.Get()
 	if err != nil {
 		return err
@@ -34,12 +32,20 @@ func BackupToGoogleDrive(email string) error {
 	if err != nil {
 		return err
 	}
-	err = server.UploadFile(encryptedData, pu.GoogleToken)
+	newToken, err := server.UploadFile(encryptedData, pu.GoogleToken)
 	if err != nil {
 		return err
 	}
+	pu.GoogleToken = newToken
 	eta := time.Now().UTC().Add(time.Second * time.Duration(pu.BackupSetting.BackupFrequencySeconds))
 	err = pu.SetupAutomaticBackup(&eta)
+	if err != nil {
+		if err.Error() != server.ErrWillNotSetupBackupByUser {
+			return err
+		}
+	}
+	// Update the access token
+	err = pu.Set()
 	if err != nil {
 		return err
 	}
