@@ -8,9 +8,9 @@ import (
 
 func main() {
 	var cnf = &config.Config{
-		Broker:        "redis://localhost:6379/",
+		Broker:        "redis://redis:6379/",
 		DefaultQueue:  "machinery_tasks",
-		ResultBackend: "redis://localhost:6379/",
+		ResultBackend: "redis://redis:6379/",
 		AMQP: &config.AMQPConfig{
 			Exchange:     "machinery_exchange",
 			ExchangeType: "direct",
