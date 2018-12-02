@@ -23,6 +23,7 @@ const (
 
 func EncryptBackupHandler(c *gin.Context) {
 	var pu PortwardenUser
+	var opu PortwardenUser
 	if err := c.ShouldBindJSON(&pu); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrBindingFromGin})
 		return
@@ -31,12 +32,18 @@ func EncryptBackupHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrLoginWithBitwarden})
 		return
 	}
-	if err := pu.Get(); err != nil {
+	opu.Email = pu.Email
+	if err := opu.Get(); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrGettingPortwardenUser})
 		return
 	}
-	if err := pu.SetupAutomaticBackup(); err != nil {
+	opu.BackupSetting = pu.BackupSetting
+	if err := opu.SetupAutomaticBackup(); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrSettingupBackup})
+		return
+	}
+	if err := opu.Set(); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrCreatingPortwardenUser})
 		return
 	}
 }
