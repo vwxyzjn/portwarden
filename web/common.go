@@ -15,7 +15,8 @@ import (
 )
 
 const (
-	BackupDefaultSleepMilliseconds = 300
+	BackupDefaultSleepMilliseconds        = 300
+	PortwardenGoogleDriveBackupFolderName = "portwarden_backup"
 )
 
 var (

@@ -2,7 +2,6 @@ package server
 
 import (
 	"bytes"
-	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -92,30 +91,6 @@ func SaveToken(file string, token *oauth2.Token) {
 	json.NewEncoder(f).Encode(token)
 }
 
-func randStr(strSize int, randType string) string {
-
-	var dictionary string
-
-	if randType == "alphanum" {
-		dictionary = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-	}
-
-	if randType == "alpha" {
-		dictionary = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-	}
-
-	if randType == "number" {
-		dictionary = "0123456789"
-	}
-
-	var bytes = make([]byte, strSize)
-	rand.Read(bytes)
-	for k, v := range bytes {
-		bytes[k] = dictionary[v%byte(len(dictionary))]
-	}
-	return string(bytes)
-}
-
 // UploadFile upload the fileBytes to Google Drive's portwarden folder
 // https://gist.github.com/tzmartin/f5732091783752660b671c20479f519a
 func UploadFile(fileBytes []byte, token *oauth2.Token) error {
@@ -126,12 +101,11 @@ func UploadFile(fileBytes []byte, token *oauth2.Token) error {
 	}
 	mimeType := http.DetectContentType(fileBytes)
 
-	parentId, err := GetOrCreateFolder(srv, "portwarden_backup")
+	parentId, err := GetOrCreateFolder(srv, web.PortwardenGoogleDriveBackupFolderName)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("Start upload")
 	f := &drive.File{Title: time.Now().Format("01-02-2006") + ".portwarden", MimeType: mimeType}
 	if parentId != "" {
 		p := &drive.ParentReference{Id: parentId}
