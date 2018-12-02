@@ -1,8 +1,7 @@
 FROM ubuntu:latest
 
 # Install Go
-RUN apt-get update
-RUN apt-get install -y wget git gcc unzip
+RUN apt-get update && apt-get install -y wget git gcc unzip
 RUN wget -q -P /tmp https://dl.google.com/go/go1.11.2.linux-amd64.tar.gz
 RUN tar -C /usr/local -xzf /tmp/go1.11.2.linux-amd64.tar.gz
 RUN rm /tmp/go1.11.2.linux-amd64.tar.gz
