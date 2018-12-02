@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sync"
 
 	machinery "github.com/RichardKnop/machinery/v1"
 	"github.com/RichardKnop/machinery/v1/config"
@@ -25,6 +26,7 @@ var (
 	RedisClient              *redis.Client
 	MachineryServer          *machinery.Server
 	BITWARDENCLI_APPDATA_DIR string
+	GlobalMutex              sync.Mutex
 )
 
 func InitCommonVars() {

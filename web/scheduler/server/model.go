@@ -98,6 +98,8 @@ func (pu *PortwardenUser) CreateWithGoogle() error {
 }
 
 func (pu *PortwardenUser) LoginWithBitwarden() error {
+	web.GlobalMutex.Lock()
+	defer web.GlobalMutex.Unlock()
 	opu := PortwardenUser{Email: pu.Email}
 	err := opu.Get()
 	if err != nil {

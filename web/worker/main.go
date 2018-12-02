@@ -22,6 +22,8 @@ func main() {
 }
 
 func BackupToGoogleDrive(email string) error {
+	web.GlobalMutex.Lock()
+	defer web.GlobalMutex.Unlock()
 	pu := server.PortwardenUser{Email: email}
 	fmt.Println(pu.Email)
 	err := pu.Get()
@@ -37,6 +39,9 @@ func BackupToGoogleDrive(email string) error {
 		return err
 	}
 	eta := time.Now().UTC().Add(time.Second * time.Duration(pu.BackupSetting.BackupFrequencySeconds))
-	pu.SetupAutomaticBackup(&eta)
+	err = pu.SetupAutomaticBackup(&eta)
+	if err != nil {
+		return err
+	}
 	return nil
 }
