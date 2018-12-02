@@ -36,6 +36,7 @@ func (ps *PortwardenServer) Run() {
 		c.JSON(200, "success")
 	})
 	ps.Router.POST("/encrypt", EncryptBackupHandler)
+	ps.Router.POST("/encrypt/cancel", CancelEncryptBackupHandler)
 
 	ps.Router.Run(":" + strconv.Itoa(ps.Port))
 }

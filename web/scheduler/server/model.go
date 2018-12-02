@@ -15,9 +15,14 @@ import (
 	"golang.org/x/oauth2"
 )
 
+const (
+	ErrWillNotSetupBackupByUser = "err the user stopped backing up"
+)
+
 type BackupSetting struct {
 	Passphrase             string `json:"passphrase"`
 	BackupFrequencySeconds int    `json:"backup_frequency_seconds"`
+	WillSetupBackup        bool   `json:"will_setup_backup"`
 }
 
 type DecryptBackupInfo struct {
@@ -117,6 +122,9 @@ func (pu *PortwardenUser) LoginWithBitwarden() error {
 }
 
 func (pu *PortwardenUser) SetupAutomaticBackup(eta *time.Time) error {
+	if !pu.BackupSetting.WillSetupBackup {
+		return errors.New(ErrWillNotSetupBackupByUser)
+	}
 	signature := &tasks.Signature{
 		Name: "BackupToGoogleDrive",
 		Args: []tasks.Arg{
