@@ -8,18 +8,15 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/RichardKnop/machinery/v1/tasks"
 	"github.com/vwxyzjn/portwarden"
+	"github.com/vwxyzjn/portwarden/web"
 	"golang.org/x/oauth2"
 )
 
-const (
-	BackupDefaultSleepMilliseconds = 300
-)
-
 type BackupSetting struct {
-	FileNamePrefix            string                      `json:"filename_prefix"`
-	Passphrase                string                      `json:"passphrase"`
-	BitwardenLoginCredentials portwarden.LoginCredentials `json:"bitwarden_login_credentials"`
+	FileNamePrefix string `json:"filename_prefix"`
+	Passphrase     string `json:"passphrase"`
 }
 
 type DecryptBackupInfo struct {
@@ -77,7 +74,7 @@ func (pu *PortwardenUser) CreateWithGoogle() error {
 
 	// For debugging
 	//fmt.Println(request)
-	GoogleDriveClient := GoogleDriveAppConfig.Client(oauth2.NoContext, pu.GoogleToken)
+	GoogleDriveClient := web.GoogleDriveAppConfig.Client(oauth2.NoContext, pu.GoogleToken)
 	response, err := GoogleDriveClient.Do(request)
 	if err != nil {
 		return err
@@ -105,11 +102,28 @@ func (pu *PortwardenUser) LoginWithBitwarden() error {
 	if err != nil {
 		return err
 	}
-	opu.BitwardenSessionKey, opu.BitwardenDataJSON, err = portwarden.BWLoginGetSessionKeyAndDataJSON(pu.BitwardenLoginCredentials, BITWARDENCLI_APPDATA_DIR)
+	opu.BitwardenSessionKey, opu.BitwardenDataJSON, err = portwarden.BWLoginGetSessionKeyAndDataJSON(pu.BitwardenLoginCredentials, web.BITWARDENCLI_APPDATA_DIR)
 	if err != nil {
 		return err
 	}
 	err = opu.Set()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (pu *PortwardenUser) SetupAutomaticBackup() error {
+	signature := &tasks.Signature{
+		Name: "BackupToGoogleDrive",
+		Args: []tasks.Arg{
+			{
+				Type:  "string",
+				Value: pu.Email,
+			},
+		},
+	}
+	_, err := web.MachineryServer.SendTask(signature)
 	if err != nil {
 		return err
 	}
@@ -122,7 +136,7 @@ func (pu *PortwardenUser) Set() error {
 	if err != nil {
 		return err
 	}
-	err = RedisClient.Set(pu.Email, string(puJson), 0).Err()
+	err = web.RedisClient.Set(pu.Email, string(puJson), 0).Err()
 	if err != nil {
 		panic(err)
 	}
@@ -130,7 +144,7 @@ func (pu *PortwardenUser) Set() error {
 }
 
 func (pu *PortwardenUser) Get() error {
-	val, err := RedisClient.Get(pu.Email).Result()
+	val, err := web.RedisClient.Get(pu.Email).Result()
 	if err != nil {
 		return err
 	}

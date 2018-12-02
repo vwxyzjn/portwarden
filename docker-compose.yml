@@ -3,9 +3,11 @@ version: '3'
 services:
 
   scheduler:
-    image: vwxyzjn/portwarden-scheduler:0.0.1
+    image: vwxyzjn/portwarden-scheduler:0.1.1
     stdin_open: true
     tty: true
+    environment:
+      - BITWARDENCLI_APPDATA_DIR=/BitwardenCLI
     depends_on:
       - redis
     ports:
@@ -19,10 +21,20 @@ services:
       - 6379:6379
 
   worker:
-    image: vwxyzjn/portwarden-scheduler:0.0.1
+    image: vwxyzjn/portwarden-scheduler:0.1.1
     stdin_open: true
     tty: true
+    environment:
+      - BITWARDENCLI_APPDATA_DIR=/BitwardenCLI
     depends_on:
       - redis
     volumes:
       - .:/go/src/github.com/vwxyzjn/portwarden
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    restart: always
+    environment:
+    - REDIS_HOSTS=local:redis:6379
+    ports:
+    - "8081:8081"

@@ -1,19 +1,21 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/gin-gonic/gin"
+	"github.com/vwxyzjn/portwarden/web"
 	"golang.org/x/oauth2"
 )
 
 const (
+	ErrBindingFromGin         = "(debugging message) error binding json"
 	ErrRetrievingOauthCode    = "error retrieving oauth login credentials; try again"
 	ErrCreatingPortwardenUser = "error creating a portwarden user"
-	ErrGettingPortwardenUser  = "error creating a portwarden user"
+	ErrGettingPortwardenUser  = "error getting a portwarden user"
 	ErrLoginWithBitwarden     = "error logging in with Bitwarden"
+	ErrSettingupBackup        = "error setting up backup"
 
 	FrontEndBaseAddressTest = "http://localhost:8000/"
 	FrontEndBaseAddressProd = ""
@@ -22,25 +24,21 @@ const (
 func EncryptBackupHandler(c *gin.Context) {
 	var pu PortwardenUser
 	if err := c.ShouldBindJSON(&pu); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrLoginWithBitwarden})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrBindingFromGin})
 		return
 	}
 	if err := pu.LoginWithBitwarden(); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrLoginWithBitwarden})
 		return
 	}
-	pu.Get()
-	fmt.Println(string(pu.BitwardenDataJSON))
-	// sessionKey, err := portwarden.BWLoginGetSessionKey(&pu.BitwardenLoginCredentials)
-	// if err != nil {
-	// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": sessionKey})
-	// 	return
-	// }
-	// err = portwarden.CreateBackupFile(pu.FileNamePrefix, pu.Passphrase, sessionKey, BackupDefaultSleepMilliseconds)
-	// if err != nil {
-	// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": sessionKey})
-	// 	return
-	// }
+	if err := pu.Get(); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrGettingPortwardenUser})
+		return
+	}
+	if err := pu.SetupAutomaticBackup(); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrSettingupBackup})
+		return
+	}
 }
 
 //TODO: GoogleDriveHandler() will return Json with the google login url
@@ -58,7 +56,7 @@ func (ps *PortwardenServer) GetGoogleDriveLoginHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrRetrievingOauthCode})
 		return
 	}
-	tok, err := GoogleDriveAppConfig.Exchange(oauth2.NoContext, gdc.Code)
+	tok, err := web.GoogleDriveAppConfig.Exchange(oauth2.NoContext, gdc.Code)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error(), "message": "Login failure"})
 		return
