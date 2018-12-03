@@ -18,6 +18,9 @@ services:
       /go/src/github.com/vwxyzjn/portwarden/web/scheduler
     command:
       ./scheduler
+    labels: 
+      kompose.service.expose: "true"
+      kompose.service.type: "loadbalancer"
 
   redis:
     image: redis
@@ -49,3 +52,6 @@ services:
     - REDIS_HOSTS=local:redis:6379
     ports:
     - "8081:8081"
+    labels: 
+      kompose.service.expose: "true"
+      kompose.service.type: "loadbalancer"
