@@ -2,8 +2,10 @@ package server
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis"
 	"github.com/imdario/mergo"
 	"github.com/vwxyzjn/portwarden/web"
 	"golang.org/x/oauth2"
@@ -95,13 +97,29 @@ func (ps *PortwardenServer) GetGoogleDriveLoginHandler(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error(), "message": "Login failure"})
 		return
 	}
-	pu := &PortwardenUser{GoogleToken: tok}
-	err = pu.CreateWithGoogle()
+	gui, err := RetrieveUserEmail(tok)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrCreatingPortwardenUser})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error(), "message": "Login failure"})
 		return
 	}
-	c.Redirect(http.StatusMovedPermanently, FrontEndBaseAddressTest+"?access_token="+pu.GoogleToken.AccessToken)
+	pu := &PortwardenUser{Email: gui.Email, GoogleToken: tok}
+	err = pu.Get()
+	if err != nil {
+		if err != redis.Nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrGettingPortwardenUser})
+			return
+		}
+		// Create a user
+		err = pu.CreateWithGoogle()
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrCreatingPortwardenUser})
+			return
+		}
+		c.Redirect(http.StatusMovedPermanently, FrontEndBaseAddressTest+"home/"+"?access_token="+pu.GoogleToken.AccessToken+"&email="+pu.Email+"&will_setup_backup="+strconv.FormatBool(false))
+		return
+	}
+	// Using info from exisiting user
+	c.Redirect(http.StatusMovedPermanently, FrontEndBaseAddressTest+"home/"+"?access_token="+tok.AccessToken+"&email="+pu.Email+"&will_setup_backup="+strconv.FormatBool(pu.BackupSetting.WillSetupBackup))
 	return
 }
 

@@ -16,8 +16,8 @@ services:
       - .:/go/src/github.com/vwxyzjn/portwarden
     working_dir:
       /go/src/github.com/vwxyzjn/portwarden/web/scheduler
-    command:
-      go run main.go
+    # command:
+    #   go run main.go
 
   redis:
     image: redis

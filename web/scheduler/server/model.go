@@ -69,29 +69,9 @@ type GoogleUserInfo struct {
 }
 
 func (pu *PortwardenUser) CreateWithGoogle() error {
-	postURL := "https://www.googleapis.com/oauth2/v2/userinfo"
-	request, err := http.NewRequest("GET", postURL, nil)
+	var err error
+	pu.GoogleUserInfo, err = RetrieveUserEmail(pu.GoogleToken)
 	if err != nil {
-		return err
-	}
-	request.Header.Add("Host", "www.googleapis.com")
-	request.Header.Add("Authorization", "Bearer "+pu.GoogleToken.AccessToken)
-	request.Header.Add("Content-Length", strconv.FormatInt(request.ContentLength, 10))
-
-	// For debugging
-	//fmt.Println(request)
-	GoogleDriveClient := web.GoogleDriveAppConfig.Client(oauth2.NoContext, pu.GoogleToken)
-	response, err := GoogleDriveClient.Do(request)
-	if err != nil {
-		return err
-	}
-
-	defer response.Body.Close()
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return err
-	}
-	if err := json.Unmarshal(body, &pu.GoogleUserInfo); err != nil {
 		return err
 	}
 	pu.Email = pu.GoogleUserInfo.Email
@@ -178,4 +158,32 @@ func VerifyGoogleAccessToekn(access_token string) (bool, error) {
 		return false, errors.New(string(body))
 	}
 	return true, nil
+}
+
+func RetrieveUserEmail(token *oauth2.Token) (GoogleUserInfo, error) {
+	var gui GoogleUserInfo
+	postURL := "https://www.googleapis.com/oauth2/v2/userinfo"
+	request, err := http.NewRequest("GET", postURL, nil)
+	if err != nil {
+		return gui, err
+	}
+	request.Header.Add("Host", "www.googleapis.com")
+	request.Header.Add("Authorization", "Bearer "+token.AccessToken)
+	request.Header.Add("Content-Length", strconv.FormatInt(request.ContentLength, 10))
+
+	GoogleDriveClient := web.GoogleDriveAppConfig.Client(oauth2.NoContext, token)
+	response, err := GoogleDriveClient.Do(request)
+	if err != nil {
+		return gui, err
+	}
+
+	defer response.Body.Close()
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return gui, err
+	}
+	if err := json.Unmarshal(body, &gui); err != nil {
+		return gui, err
+	}
+	return gui, nil
 }
