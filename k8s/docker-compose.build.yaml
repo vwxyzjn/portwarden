@@ -3,7 +3,7 @@ version: '3'
 services:
 
   scheduler:
-    image: vwxyzjn/portwarden-base:1.3.0
+    image: vwxyzjn/portwarden-base:1.5.0
     stdin_open: true
     tty: true
     environment:
@@ -12,8 +12,6 @@ services:
       - redis
     ports:
       - 5000:5000
-    # volumes:
-    #   - .:/go/src/github.com/vwxyzjn/portwarden
     working_dir:
       /go/src/github.com/vwxyzjn/portwarden/web/scheduler
     command:
@@ -28,7 +26,7 @@ services:
       - 6379:6379
 
   worker:
-    image: vwxyzjn/portwarden-base:1.3.0
+    image: vwxyzjn/portwarden-base:1.5.0
     stdin_open: true
     tty: true
     environment:
@@ -38,8 +36,6 @@ services:
     deploy:
       mode: replicated
       replicas: 2
-    # volumes:
-    #   - .:/go/src/github.com/vwxyzjn/portwarden
     working_dir:
       /go/src/github.com/vwxyzjn/portwarden/web/worker
     command:
