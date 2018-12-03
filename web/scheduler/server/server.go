@@ -1,10 +1,8 @@
 package server
 
 import (
-	"net/http"
 	"strconv"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
@@ -20,10 +18,10 @@ type PortwardenServer struct {
 
 func (ps *PortwardenServer) Run() {
 	ps.Router = gin.Default()
-	ps.Router.Use(cors.Default())
+	ps.Router.Use(CORSMiddleware())
 
 	ps.Router.GET("/", func(c *gin.Context) {
-		http.ServeFile(c.Writer, c.Request, "index.html")
+		c.JSON(200, "Welcome to Portwarden API")
 	})
 
 	ps.Router.POST("/decrypt", DecryptBackupHandler)
