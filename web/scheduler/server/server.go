@@ -3,6 +3,8 @@ package server
 import (
 	"strconv"
 
+	"github.com/davecgh/go-spew/spew"
+
 	"github.com/gin-gonic/gin"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
@@ -17,6 +19,7 @@ type PortwardenServer struct {
 }
 
 func (ps *PortwardenServer) Run() {
+	spew.Dump("Scheduler Server Started")
 	ps.Router = gin.Default()
 	ps.Router.Use(CORSMiddleware())
 
