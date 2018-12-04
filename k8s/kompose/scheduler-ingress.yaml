@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: scheduler
+  name: scheduler
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: scheduler
+          servicePort: 5000
+status:
+  loadBalancer: {}

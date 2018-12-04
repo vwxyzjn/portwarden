@@ -1,0 +1,53 @@
+version: '3'
+
+services:
+
+  scheduler:
+    image: vwxyzjn/portwarden-base:1.6.0
+    stdin_open: true
+    tty: true
+    environment:
+      - BITWARDENCLI_APPDATA_DIR=/BitwardenCLI
+    depends_on:
+      - redis
+    ports:
+      - 5000:5000
+    working_dir:
+      /go/src/github.com/vwxyzjn/portwarden/web/scheduler
+    command:
+      ./scheduler
+    labels: 
+      kompose.service.expose: "true"
+      kompose.service.type: "loadbalancer"
+
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+
+  worker:
+    image: vwxyzjn/portwarden-base:1.6.0
+    stdin_open: true
+    tty: true
+    environment:
+      - BITWARDENCLI_APPDATA_DIR=/BitwardenCLI
+    depends_on:
+      - redis
+    deploy:
+      mode: replicated
+      replicas: 2
+    working_dir:
+      /go/src/github.com/vwxyzjn/portwarden/web/worker
+    command:
+      ./worker
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    restart: always
+    environment:
+    - REDIS_HOSTS=local:redis:6379
+    ports:
+    - "8081:8081"
+    labels: 
+      kompose.service.expose: "true"
+      kompose.service.type: "loadbalancer"

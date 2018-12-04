@@ -1,0 +1,32 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: C:\Go\bin\kompose.exe convert -f docker-compose.build.yaml
+    kompose.service.expose: "true"
+    kompose.service.type: loadbalancer
+    kompose.version: 1.17.0 (a74acad)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: redis-commander
+  name: redis-commander
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: redis-commander
+    spec:
+      containers:
+      - env:
+        - name: REDIS_HOSTS
+          value: local:redis:6379
+        image: rediscommander/redis-commander:latest
+        name: redis-commander
+        ports:
+        - containerPort: 8081
+        resources: {}
+      restartPolicy: Always
+status: {}

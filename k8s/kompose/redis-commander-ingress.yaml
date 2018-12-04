@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: redis-commander
+  name: redis-commander
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: redis-commander
+          servicePort: 8081
+status:
+  loadBalancer: {}
