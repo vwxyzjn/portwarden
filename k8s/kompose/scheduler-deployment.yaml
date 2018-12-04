@@ -1,0 +1,37 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: C:\Go\bin\kompose.exe convert -f docker-compose.build.yaml
+    kompose.service.expose: "true"
+    kompose.service.type: loadbalancer
+    kompose.version: 1.17.0 (a74acad)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: scheduler
+  name: scheduler
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: scheduler
+    spec:
+      containers:
+      - args:
+        - ./scheduler
+        env:
+        - name: BITWARDENCLI_APPDATA_DIR
+          value: /BitwardenCLI
+        image: vwxyzjn/portwarden-base:1.6.0
+        name: scheduler
+        ports:
+        - containerPort: 5000
+        resources: {}
+        stdin: true
+        tty: true
+        workingDir: /go/src/github.com/vwxyzjn/portwarden/web/scheduler
+      restartPolicy: Always
+status: {}

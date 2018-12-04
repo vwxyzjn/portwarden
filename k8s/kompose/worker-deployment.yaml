@@ -1,0 +1,33 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: C:\Go\bin\kompose.exe convert -f docker-compose.build.yaml
+    kompose.version: 1.17.0 (a74acad)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: worker
+  name: worker
+spec:
+  replicas: 2
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: worker
+    spec:
+      containers:
+      - args:
+        - ./worker
+        env:
+        - name: BITWARDENCLI_APPDATA_DIR
+          value: /BitwardenCLI
+        image: vwxyzjn/portwarden-base:1.6.0
+        name: worker
+        resources: {}
+        stdin: true
+        tty: true
+        workingDir: /go/src/github.com/vwxyzjn/portwarden/web/worker
+      restartPolicy: Always
+status: {}
