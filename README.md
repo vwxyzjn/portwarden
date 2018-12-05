@@ -9,7 +9,7 @@ It addresses this issue in the community forum https://community.bitwarden.com/t
 
 Go to https://github.com/bitwarden/cli/releases to download the latest version of Bitwarden CLI and place the executable `bw`/`bw.exe` in your `PATH`. Then, go to https://github.com/vwxyzjn/portwarden/releases/ to downlaod the latest release of `portwarden`. Now just follow the steps in the following Gif:
 
-![alt text](./demo.gif "Portwarden Demo")
+![alt text](./portwarden_cli_demo.gif "Portwarden CLI Demo")
 
 ```bash
 portwarden --passphrase 1234 --filename backup.portwarden encrypt
@@ -25,6 +25,8 @@ docker-compose up -d
 ```
 
 After the services are spinned up, go to http://localhost:8000 and follow the steps to setup scheduled backups.
+
+![alt text](./portwarden_server_demo.gif "Portwarden Server Demo")
 
 ## Portwarden Compared with Official Bitwarden Backup (As of 12/5/2018)
 ||Portwarden|Official Bitwarden Backup|
