@@ -26,6 +26,8 @@ docker-compose up -d
 
 After the services are spinned up, go to http://localhost:8000 and follow the steps to setup scheduled backups.
 
+You will probably have to host Portwarden Server on your machine. One caveat is that Portwarden Server does *store your encryption key* (not your master password) and I don't feel comfortable managing your credentials. This server is really for my personal use and a demonstration of the modern architecture for my Software Design class (see below)
+
 ![alt text](./portwarden_server_demo.gif "Portwarden Server Demo")
 
 ## Portwarden Compared with Official Bitwarden Backup (As of 12/5/2018)
