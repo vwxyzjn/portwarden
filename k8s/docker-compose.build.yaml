@@ -51,3 +51,11 @@ services:
     labels: 
       kompose.service.expose: "true"
       kompose.service.type: "loadbalancer"
+
+  frontend:
+    image: vwxyzjn/portwarden-frontend:1.0.1
+    restart: always
+    environment:
+    - HOST=0.0.0.0
+    ports:
+    - "8000:8000"
