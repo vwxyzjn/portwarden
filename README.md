@@ -18,7 +18,7 @@ portwarden --passphrase 1234 --filename backup.portwarden decrypt
 
 ## Usage of Portwarden Server (Setup Scheduled Backup)
 
-Make sure you have [Docker](https://docs.docker.com/install/) installed and ports 8000, 8081, 5000 unused. Then download https://github.com/vwxyzjn/portwarden/blob/master/k8s/docker-compose.build.yaml to a folder and run 
+Make sure you have [Docker](https://docs.docker.com/install/) installed and ports 8000, 8081, 5000 unused. Then download https://github.com/vwxyzjn/portwarden/blob/master/k8s/docker-compose.build.yaml to a folder and **name the file `docker-compose.yaml`**  and run 
 
 ```bash
 docker-compose up -d
