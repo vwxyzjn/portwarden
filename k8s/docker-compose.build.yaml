@@ -3,7 +3,7 @@ version: '3'
 services:
 
   scheduler:
-    image: vwxyzjn/portwarden-base:1.6.0
+    image: vwxyzjn/portwarden-server-prod:1.7.0
     stdin_open: true
     tty: true
     environment:
@@ -26,7 +26,7 @@ services:
       - 6379:6379
 
   worker:
-    image: vwxyzjn/portwarden-base:1.6.0
+    image: vwxyzjn/portwarden-server-prod:1.7.0
     stdin_open: true
     tty: true
     environment:

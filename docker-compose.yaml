@@ -3,7 +3,7 @@ version: '3'
 services:
 
   scheduler:
-    image: vwxyzjn/portwarden-base:1.1.0
+    image: vwxyzjn/portwarden-server-dev:1.7.0
     stdin_open: true
     tty: true
     environment:
@@ -26,7 +26,7 @@ services:
       - 6379:6379
 
   worker:
-    image: vwxyzjn/portwarden-base:1.1.0
+    image: vwxyzjn/portwarden-server-dev:1.7.0
     stdin_open: true
     tty: true
     environment:
@@ -41,8 +41,8 @@ services:
       - .:/go/src/github.com/vwxyzjn/portwarden
     working_dir:
       /go/src/github.com/vwxyzjn/portwarden/web/worker
-    # command:
-    #   go run main.go
+    command:
+      go run main.go
 
   redis-commander:
     image: rediscommander/redis-commander:latest
