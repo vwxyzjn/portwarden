@@ -76,7 +76,6 @@ func InitCommonVars() {
 	if _, err := os.Stat(BITWARDENCLI_APPDATA_DIR); os.IsNotExist(err) {
 		os.Mkdir(BITWARDENCLI_APPDATA_DIR, os.ModePerm)
 	}
-	_ = os.Mkdir(BITWARDENCLI_APPDATA_DIR, os.ModePerm)
 
 	// Setup Server Setting
 	temp, err := strconv.Atoi(os.Getenv("BackupDefaultSleepMilliseconds"))
