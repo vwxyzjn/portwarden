@@ -23,9 +23,5 @@ RUN wget -q https://github.com/bitwarden/cli/releases/download/v1.6.0/bw-linux-1
 RUN unzip bw-linux-1.6.0.zip -d /usr/bin/
 RUN chmod +x /usr/bin/bw
 
-# Run dep
-# Notice git is the dependency for running dep
-RUN cd /go/src/github.com/vwxyzjn/portwarden && dep ensure --vendor-only
-
 # Ready to run
 EXPOSE 5000
