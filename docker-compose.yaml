@@ -53,7 +53,7 @@ services:
     - "8081:8081"
 
   frontend:
-    image: vwxyzjn/portwarden-frontend:1.1.0
+    image: vwxyzjn/portwarden-frontend:1.2.0
     restart: always
     ports:
     - "8000:8000"
