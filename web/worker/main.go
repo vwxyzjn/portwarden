@@ -5,6 +5,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
+
 	"github.com/vwxyzjn/portwarden"
 	"github.com/vwxyzjn/portwarden/web"
 	"github.com/vwxyzjn/portwarden/web/scheduler/server"
@@ -37,6 +39,7 @@ func BackupToGoogleDrive(email string) error {
 	}
 	encryptedData, err := portwarden.CreateBackupBytesUsingBitwardenLocalJSON(pu.BitwardenDataJSON, web.BITWARDENCLI_APPDATA_DIR, pu.BackupSetting.Passphrase, pu.BitwardenSessionKey, web.BackupDefaultSleepMilliseconds)
 	if err != nil {
+		spew.Dump("BackupToGoogleDrive has an error", err)
 		return err
 	}
 	newToken, err := server.UploadFile(encryptedData, pu.GoogleToken)

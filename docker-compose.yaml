@@ -8,6 +8,7 @@ services:
     tty: true
     environment:
       - BITWARDENCLI_APPDATA_DIR=/BitwardenCLI
+      - BackupDefaultSleepMilliseconds=20
     depends_on:
       - redis
     ports:
@@ -30,6 +31,7 @@ services:
     tty: true
     environment:
       - BITWARDENCLI_APPDATA_DIR=/BitwardenCLI
+      - BackupDefaultSleepMilliseconds=20
     depends_on:
       - redis
     deploy:
@@ -39,8 +41,8 @@ services:
       - .:/go/src/github.com/vwxyzjn/portwarden
     working_dir:
       /go/src/github.com/vwxyzjn/portwarden/web/worker
-    command:
-      go run main.go
+    # command:
+    #   go run main.go
 
   redis-commander:
     image: rediscommander/redis-commander:latest
