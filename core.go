@@ -15,6 +15,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
+
 	"github.com/mholt/archiver"
 	"github.com/tidwall/pretty"
 )
@@ -79,9 +81,13 @@ func CreateBackupFile(fileName, passphrase, sessionKey string, sleepMilliseconds
 }
 
 func CreateBackupBytes(passphrase, sessionKey string, sleepMilliseconds int) ([]byte, error) {
+	if err := os.MkdirAll(BackupFolderName, os.ModePerm); err != nil {
+		return nil, err
+	}
+	defer os.RemoveAll(BackupFolderName)
+
 	pwes := []PortWardenElement{}
 
-	// save formmated json to "main.json"
 	rawByte, err := BWListItemsRawBytes(sessionKey)
 	if err != nil {
 		return nil, err
@@ -89,13 +95,12 @@ func CreateBackupBytes(passphrase, sessionKey string, sleepMilliseconds int) ([]
 	if err := json.Unmarshal(rawByte, &pwes); err != nil {
 		return nil, err
 	}
-	if err = os.MkdirAll(BackupFolderName, os.ModePerm); err != nil {
-		return nil, err
-	}
 	err = BWGetAllAttachments(BackupFolderName, sessionKey, pwes, sleepMilliseconds)
 	if err != nil {
 		return nil, err
 	}
+
+	// save formmated json to "main.json"
 	formattedByte := pretty.Pretty(rawByte)
 	if err := ioutil.WriteFile(BackupFolderName+"main.json", formattedByte, 0644); err != nil {
 		return nil, err
@@ -114,11 +119,6 @@ func CreateBackupBytes(passphrase, sessionKey string, sleepMilliseconds int) ([]
 		return nil, err
 	}
 
-	// cleanup: delete temporary files
-	err = os.RemoveAll(BackupFolderName)
-	if err != nil {
-		return nil, err
-	}
 	return encryptedBytes, nil
 }
 
@@ -178,9 +178,11 @@ func BWGetAllAttachments(outputDir, sessionKey string, pws []PortWardenElement, 
 	for _, item := range pws {
 		if len(item.Attachments) > 0 {
 			for _, innerItem := range item.Attachments {
-				err := BWGetAttachment(outputDir+item.Name+"/", item.ID, innerItem.ID, sessionKey)
+				ourputDir := strings.TrimSpace(outputDir + item.Name) // Keep this line. See https://github.com/vwxyzjn/portwarden/issues/10
+				err := BWGetAttachment(ourputDir+"/", item.ID, innerItem.ID, sessionKey)
 				time.Sleep(time.Millisecond * time.Duration(sleepMilliseconds))
 				if err != nil {
+					spew.Dump(err, "failed item ids are ", item.ID, innerItem.ID)
 					return err
 				}
 			}
