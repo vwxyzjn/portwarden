@@ -25,6 +25,7 @@ func main() {
 }
 
 func BackupToGoogleDrive(email string) error {
+	time.Sleep(time.Millisecond * 400)
 	web.GlobalMutex.Lock()
 	defer web.GlobalMutex.Unlock()
 	name, err := os.Hostname()
@@ -32,11 +33,18 @@ func BackupToGoogleDrive(email string) error {
 		return err
 	}
 	fmt.Println("BackupToGoogleDrive called from worker:", name)
+
+	// Check whether user cancelled backup
 	pu := server.PortwardenUser{Email: email}
 	err = pu.Get()
 	if err != nil {
 		return err
 	}
+	if !pu.BackupSetting.WillSetupBackup {
+		fmt.Printf("user %v cancelled backup \n", pu.Email)
+		return nil
+	}
+
 	encryptedData, err := portwarden.CreateBackupBytesUsingBitwardenLocalJSON(pu.BitwardenDataJSON, web.BITWARDENCLI_APPDATA_DIR, pu.BackupSetting.Passphrase, pu.BitwardenSessionKey, web.BackupDefaultSleepMilliseconds)
 	if err != nil {
 		spew.Dump("BackupToGoogleDrive has an error", err)
@@ -47,14 +55,22 @@ func BackupToGoogleDrive(email string) error {
 		return err
 	}
 	pu.GoogleToken = newToken
+
+	// Check whether user cancelled backup
+	opu := server.PortwardenUser{Email: email}
+	err = opu.Get()
+	if err != nil {
+		return err
+	}
+	if !opu.BackupSetting.WillSetupBackup {
+		fmt.Printf("user %v cancelled backup \n", pu.Email)
+		return nil
+	}
+
 	eta := time.Now().UTC().Add(time.Second * time.Duration(pu.BackupSetting.BackupFrequencySeconds))
 	err = pu.SetupAutomaticBackup(&eta)
 	if err != nil {
-		if err.Error() != server.ErrWillNotSetupBackupByUser {
-			return err
-		} else {
-			fmt.Printf("user %v cancelled backup", pu.Email)
-		}
+		return err
 	}
 	// Update the access token
 	err = pu.Set()
