@@ -8,6 +8,7 @@ services:
     tty: true
     environment:
       - BITWARDENCLI_APPDATA_DIR=/BitwardenCLI
+      - BackupDefaultSleepMilliseconds=20
     depends_on:
       - redis
     ports:
@@ -31,6 +32,7 @@ services:
     tty: true
     environment:
       - BITWARDENCLI_APPDATA_DIR=/BitwardenCLI
+      - BackupDefaultSleepMilliseconds=20
     depends_on:
       - redis
     deploy:
