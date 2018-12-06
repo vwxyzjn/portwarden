@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"sync"
 
 	machinery "github.com/RichardKnop/machinery/v1"
@@ -16,17 +17,17 @@ import (
 )
 
 const (
-	BackupDefaultSleepMilliseconds        = 300
 	PortwardenGoogleDriveBackupFolderName = "portwarden_backup"
 	MachineryRetryCount                   = 3
 )
 
 var (
-	GoogleDriveAppConfig     *oauth2.Config
-	RedisClient              *redis.Client
-	MachineryServer          *machinery.Server
-	BITWARDENCLI_APPDATA_DIR string
-	GlobalMutex              sync.Mutex
+	BackupDefaultSleepMilliseconds int
+	GoogleDriveAppConfig           *oauth2.Config
+	RedisClient                    *redis.Client
+	MachineryServer                *machinery.Server
+	BITWARDENCLI_APPDATA_DIR       string
+	GlobalMutex                    sync.Mutex
 )
 
 func InitCommonVars() {
@@ -72,4 +73,12 @@ func InitCommonVars() {
 
 	// Get Bitwarden CLI Env Var
 	BITWARDENCLI_APPDATA_DIR = os.Getenv("BITWARDENCLI_APPDATA_DIR")
+
+	// Setup Server Setting
+	temp, err := strconv.Atoi(os.Getenv("BackupDefaultSleepMilliseconds"))
+	if err != nil || temp == 0 {
+		log.Fatalf("Unable to read BackupDefaultSleepMilliseconds: %v", err)
+	}
+	BackupDefaultSleepMilliseconds = temp
+
 }
