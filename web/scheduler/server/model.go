@@ -94,9 +94,6 @@ func (pu *PortwardenUser) LoginWithBitwarden() error {
 }
 
 func (pu *PortwardenUser) SetupAutomaticBackup(eta *time.Time) error {
-	if !pu.BackupSetting.WillSetupBackup {
-		return errors.New(ErrWillNotSetupBackupByUser)
-	}
 	signature := &tasks.Signature{
 		Name: "BackupToGoogleDrive",
 		Args: []tasks.Arg{
