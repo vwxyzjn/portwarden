@@ -110,9 +110,12 @@ I currently taking this class, and our final project is suppose to demonstrate s
 - [x] Has a **simple** front end that gets user's username and password and show them if the backup process has begun.
 - [x] Allow the user to cancel such backup process if he/she wants. 
 
-### Architecture Diagram
-
-It probably looks something like this:
-
-![alt text](./web/architecture.svg "Logo Title Text 1")
+### Architecture Diagrams
+Designed following the C4 model convention:
+#### Context Diagram
+![alt text](./web/diagrams/context.png "Logo Title Text 1")
+#### Container Diagram
+![alt text](./web/diagrams/container.png "Logo Title Text 2")
+#### Component Diagram
+![alt text](./web/diagrams/component.png "Logo Title Text 3")
 
