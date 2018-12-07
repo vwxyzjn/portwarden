@@ -163,12 +163,15 @@ I currently taking this class, and our final project is suppose to demonstrate s
 - [x] Has a **simple** front end that gets user's username and password and show them if the backup process has begun.
 - [x] Allow the user to cancel such backup process if he/she wants. 
 
-### Architecture Diagrams
-Designed following the C4 model convention:
+### System Architecture
+We tried to avoid being boxed by a layered architecture and strived to conform to C4 standards best we could and ensured the code reflects the architecture. Overall, we found the lectures and assigned readings to greatly improve our ability to design scalable system architecture.
 #### Context Diagram
+Figure 1 maps out the basic systems involved with Portwarden and how they interact with each other.
 ![alt text](./web/diagrams/context.png "Logo Title Text 1")
 #### Container Diagram
+Figure 2 provides a more in-depth view of the system breaking the system down into 
 ![alt text](./web/diagrams/container.png "Logo Title Text 2")
 #### Component Diagram
+Figure 3 drills down into the most critical containers: the Backend Scheduling Service and the Backend Backup/Worker Service. The boundaries for the containers are clearly marked to provide clarity to the reader. 
 ![alt text](./web/diagrams/component.png "Logo Title Text 3")
 
