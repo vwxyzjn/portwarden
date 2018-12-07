@@ -35,8 +35,8 @@ You will probably have to host Portwarden Server on your machine. One caveat is 
 |:---|:---|:---|
 |Backend|golang|C#|
 |Backup Format|:heavy_check_mark: AES-Encrypted `.portwarden` format| Unencrypted CSV file|
-|Backup With Attachments|:heavy_check_mark:|Does not support (see [this feature request](https://community.bitwarden.com/t/allow-attachments-to-be-exported-when-using-export-data))
-|Scheduled Backup|:heavy_check_mark: Use Portwarden Server (Experimental)|not supported|
+|Backup With Attachments|:heavy_check_mark:|Not supported (see [this feature request](https://community.bitwarden.com/t/allow-attachments-to-be-exported-when-using-export-data))
+|Scheduled Backup|:heavy_check_mark: Use Portwarden Server (Experimental)|Not supported|
 
 ## Contribution & Development
 
