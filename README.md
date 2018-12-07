@@ -169,7 +169,7 @@ We tried to avoid being boxed by a layered architecture and strived to conform t
 Figure 1 maps out the basic systems involved with Portwarden and how they interact with each other.
 ![alt text](./web/diagrams/context.png "Logo Title Text 1")
 #### Container Diagram
-Figure 2 provides a more in-depth view of the system breaking the system down into 
+Figure 2 provides a more in-depth view of the system breaking the system down into containers with arrows depicting the data flow.
 ![alt text](./web/diagrams/container.png "Logo Title Text 2")
 #### Component Diagram
 Figure 3 drills down into the most critical containers: the Backend Scheduling Service and the Backend Backup/Worker Service. The boundaries for the containers are clearly marked to provide clarity to the reader. 
