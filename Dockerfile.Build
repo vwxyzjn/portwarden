@@ -19,8 +19,7 @@ RUN mv dep-linux-amd64 /usr/bin/dep
 RUN chmod +x /usr/bin/dep
 
 # Install Bitwarden CLI
-RUN wget -q https://ci.appveyor.com/api/buildjobs/pdartqa5k00a5b23/artifacts/dist%2Flinux%2Fbw
-RUN mv bw /usr/bin/bw
+RUN wget -q https://ci.appveyor.com/api/buildjobs/pdartqa5k00a5b23/artifacts/dist%2Flinux%2Fbw -O /usr/bin/bw
 RUN chmod +x /usr/bin/bw
 
 # Run dep
