@@ -14,8 +14,6 @@ import (
 )
 
 const (
-	Salt = `,(@0vd<)D6c3:5jI;4BZ(#Gx2IZ6B>`
-
 	ErrMessageAuthenticationFailed = "cipher: message authentication failed"
 	ErrWrongBackupPassphrase       = "wrong backup passphrase entered"
 )
