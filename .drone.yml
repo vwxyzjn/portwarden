@@ -4,6 +4,9 @@ name: production
 steps:
 - name: docker  
   image: plugins/docker
+  environment:
+    Salt:
+      from_secret: Salt
   settings:
     dockerfile: Dockerfile.Build
     repo: vwxyzjn/portwarden-server-prod
