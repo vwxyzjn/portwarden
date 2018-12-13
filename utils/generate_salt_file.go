@@ -27,5 +27,4 @@ func main() {
 			log.Fatalf("Error writing salt file: %v", err)
 		}
 	}
-
 }

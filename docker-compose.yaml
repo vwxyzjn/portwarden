@@ -2,6 +2,15 @@ version: '3'
 
 services:
 
+  salt_generator:
+    image: vwxyzjn/portwarden-server-dev:1.7.0
+    environment:
+      - Salt=${Salt}
+    volumes:
+      - .:/go/src/github.com/vwxyzjn/portwarden
+    command:
+      go run ./utils/generate_salt_file.go
+
   scheduler:
     image: vwxyzjn/portwarden-server-dev:1.7.0
     stdin_open: true
@@ -17,8 +26,6 @@ services:
       - .:/go/src/github.com/vwxyzjn/portwarden
     working_dir:
       /go/src/github.com/vwxyzjn/portwarden/web/scheduler
-    # command:
-    #   go run main.go
 
   redis:
     image: redis
@@ -41,8 +48,6 @@ services:
       - .:/go/src/github.com/vwxyzjn/portwarden
     working_dir:
       /go/src/github.com/vwxyzjn/portwarden/web/worker
-    command:
-      go run main.go
 
   redis-commander:
     image: rediscommander/redis-commander:latest
