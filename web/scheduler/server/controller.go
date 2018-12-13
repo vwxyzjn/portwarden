@@ -16,6 +16,7 @@ const (
 	ErrRetrievingOauthCode    = "error retrieving oauth login credentials; try again"
 	ErrCreatingPortwardenUser = "error creating a portwarden user"
 	ErrGettingPortwardenUser  = "error getting a portwarden user"
+	ErrMergingPortwardenUser  = "error merging a portwarden user"
 	ErrLoginWithBitwarden     = "error logging in with Bitwarden"
 	ErrSettingupBackup        = "error setting up backup"
 	ErrBackupNotCancelled     = "error cancelling back up"
@@ -38,7 +39,10 @@ func EncryptBackupHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrGettingPortwardenUser})
 		return
 	}
-	mergo.Merge(&pu, opu)
+	if err := mergo.Merge(&pu, opu); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrMergingPortwardenUser})
+		return
+	}
 	if err := pu.LoginWithBitwarden(); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrLoginWithBitwarden})
 		return
@@ -102,8 +106,13 @@ func (ps *PortwardenServer) GetGoogleDriveLoginHandler(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error(), "message": "Login failure"})
 		return
 	}
-	pu := &PortwardenUser{Email: gui.Email, GoogleToken: tok}
-	err = pu.Get()
+	opu := PortwardenUser{Email: gui.Email}
+	err = opu.Get()
+	pu := PortwardenUser{GoogleToken: tok}
+	if err := mergo.Merge(&pu, opu); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrMergingPortwardenUser})
+		return
+	}
 	if err != nil {
 		if err != redis.Nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrGettingPortwardenUser})
@@ -118,8 +127,12 @@ func (ps *PortwardenServer) GetGoogleDriveLoginHandler(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, FrontEndBaseAddressTest+"home/"+"?access_token="+pu.GoogleToken.AccessToken+"&email="+pu.Email+"&will_setup_backup="+strconv.FormatBool(false))
 		return
 	}
-	// Using info from exisiting user
-	c.Redirect(http.StatusMovedPermanently, FrontEndBaseAddressTest+"home/"+"?access_token="+tok.AccessToken+"&email="+pu.Email+"&will_setup_backup="+strconv.FormatBool(pu.BackupSetting.WillSetupBackup))
+	// Using info from exisiting user and update the access token
+	if err := pu.Set(); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrCreatingPortwardenUser})
+		return
+	}
+	c.Redirect(http.StatusMovedPermanently, FrontEndBaseAddressTest+"home/"+"?access_token="+pu.GoogleToken.AccessToken+"&email="+pu.Email+"&will_setup_backup="+strconv.FormatBool(pu.BackupSetting.WillSetupBackup))
 	return
 }
 
