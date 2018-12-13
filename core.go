@@ -182,7 +182,7 @@ func BWGetAllAttachments(outputDir, sessionKey string, pws []PortWardenElement, 
 				err := BWGetAttachment(ourputDir+"/", item.ID, innerItem.ID, sessionKey)
 				time.Sleep(time.Millisecond * time.Duration(sleepMilliseconds))
 				if err != nil {
-					spew.Dump(err, "failed item ids are ", item.ID, innerItem.ID)
+					spew.Dump(err, "failed item ids are ", item.ID, innerItem.ID, item.Name)
 					return err
 				}
 			}

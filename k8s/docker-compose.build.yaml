@@ -3,7 +3,7 @@ version: '3'
 services:
 
   scheduler:
-    image: vwxyzjn/portwarden-server-prod:1.7.2
+    image: vwxyzjn/portwarden-server-prod:1.7.3
     stdin_open: true
     tty: true
     environment:
@@ -25,7 +25,7 @@ services:
     image: redis
 
   worker:
-    image: vwxyzjn/portwarden-server-prod:1.7.2
+    image: vwxyzjn/portwarden-server-prod:1.7.3
     stdin_open: true
     tty: true
     environment:
