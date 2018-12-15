@@ -1,0 +1,18 @@
+kind: pipeline
+name: production
+
+steps:
+- name: docker  
+  image: plugins/docker
+  # environment:
+  #   Salt:
+  #     from_secret: Salt
+  settings:
+    dockerfile: Dockerfile.Build
+    repo: vwxyzjn/portwarden-server-prod
+    target: production
+    auto_tag: true
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
