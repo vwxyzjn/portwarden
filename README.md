@@ -1,5 +1,9 @@
 # PortWarden
 
+
+[![Build Status](https://dev.costa.sh/api/badges/vwxyzjn/portwarden/status.svg)](https://dev.costa.sh/vwxyzjn/portwarden)
+
+
 This project creates encrypted backups for (Bitwarden)[https://bitwarden.com/] vaults including attachments. It pulls your vault items from (Bitwarden CLI)[https://github.com/bitwarden/cli] and download all the attachments associated with those items to a temporary backup folder. Then, portwarden zip that folder, encrypt it with a passphrase, and delete the temporary folder. 
 
 
