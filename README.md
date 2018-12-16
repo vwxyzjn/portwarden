@@ -93,7 +93,7 @@ Feel free to watch the following Gif. If you need a control bar, please go to ht
 
 ## Contribution & Development
 
-Clone this repo. Make sure you have [Docker](https://docs.docker.com/install/) installed, ports 8000, 8081, 5000 unused, [Golang](https://golang.org/) installed, [dep](https://golang.github.io/dep/) installed. Then run 
+Clone this repo. Make sure you have [Docker](https://docs.docker.com/install/) installed, ports 8000, 8081, 5000 unused, [Golang](https://golang.org/) installed, [dep](https://golang.github.io/dep/) installed. In addition, create an environment varialble `Salt` of length 30 for encryption salt. Then run 
 
 ```bash
 dep ensure           # Install go dependencies

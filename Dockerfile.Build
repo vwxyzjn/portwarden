@@ -7,6 +7,7 @@ RUN tar -C /usr/local -xzf /tmp/go1.11.2.linux-amd64.tar.gz
 RUN rm /tmp/go1.11.2.linux-amd64.tar.gz
 ENV GOPATH /go
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
+ARG Salt
 ENV Salt $Salt
 RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
 
@@ -26,7 +27,7 @@ RUN chmod +x /usr/bin/bw
 # Run dep
 # Notice git is the dependency for running dep
 RUN cd /go/src/github.com/vwxyzjn/portwarden && dep ensure --vendor-only
-RUN go run /go/src/github.com/vwxyzjn/portwarden/web/utils/generate_salt_file.go
+RUN go run /go/src/github.com/vwxyzjn/portwarden/utils/generate_salt_file.go
 RUN go build /go/src/github.com/vwxyzjn/portwarden/web/worker/main.go && mv ./main /worker
 RUN go build /go/src/github.com/vwxyzjn/portwarden/web/scheduler/main.go && mv ./main /scheduler
 
