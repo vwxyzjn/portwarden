@@ -1,29 +1,28 @@
-# New syntax
+---
 kind: pipeline
 name: production
 steps:
-- name: docker  
-  image: docker:18.06.1-ce-dind
-  privileged: true
-  environment:
-    Salt:
-      from_secret: Salt
-    DOCKER_HOST:
-      unix:///var/run/host.sock
-    docker_username:
-      from_secret: docker_username
-    docker_password:
-      from_secret: docker_password
-  commands:
-    - docker login -u $docker_username -p $docker_password
-    - apk add git
-    - git fetch --tags
-    - git describe --always
-    - sh ./docker-build.sh
-  volumes:
-  - name: cache
-    path: /var/run/host.sock
+  - name: build-docker-images
+    image: docker:18.06.1-ce-dind
+    privileged: true
+    environment:
+      Salt:
+        from_secret: Salt
+      DOCKER_HOST:
+        unix:///var/run/host.sock
+      docker_username:
+        from_secret: docker_username
+      docker_password:
+        from_secret: docker_password
+    commands:
+      - docker login -u $docker_username -p $docker_password
+      - apk add git
+      - git fetch --tags\
+      - sh ./docker-build.sh
+    volumes:
+    - name: docker-sock
+      path: /var/run/host.sock
 volumes:
-- name: cache
-  host:
-    path: /var/run/docker.sock
+  - name: docker-sock
+    host:
+      path: /var/run/docker.sock

@@ -3,7 +3,7 @@ version: '3'
 services:
 
   scheduler:
-    image: vwxyzjn/portwarden-server-prod:1.7.3
+    image: vwxyzjn/portwarden-server-prod:v0.1.1
     stdin_open: true
     tty: true
     environment:
@@ -25,7 +25,7 @@ services:
     image: redis
 
   worker:
-    image: vwxyzjn/portwarden-server-prod:1.7.3
+    image: vwxyzjn/portwarden-server-prod:v0.1.1
     stdin_open: true
     tty: true
     environment:
@@ -53,7 +53,7 @@ services:
       kompose.service.type: "loadbalancer"
 
   frontend:
-    image: vwxyzjn/portwarden-frontend:1.2.0
+    image: vwxyzjn/portwarden-frontend:v0.1.1
     restart: always
     ports:
     - "8000:8000"
