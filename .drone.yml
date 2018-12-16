@@ -1,27 +1,22 @@
 kind: pipeline
 name: production
 steps:
-  - name: build-docker-images
-    image: docker:18.06.1-ce-dind
-    privileged: true
-    environment:
-      Salt:
-        from_secret: Salt
-      DOCKER_HOST:
-        unix:///var/run/host.sock
-      docker_username:
-        from_secret: docker_username
-      docker_password:
-        from_secret: docker_password
-    commands:
-      - docker login -u $docker_username -p $docker_password
-      - apk add git
-      - git fetch --tags\
-      - sh ./docker-build.sh
-    volumes:
-    - name: docker-sock
-      path: /var/run/host.sock
-volumes:
-  - name: docker-sock
-    host:
-      path: /var/run/docker.sock
+- name: docker  
+  image: plugins/docker
+  environment:
+    Salt:
+      from_secret: Salt
+    PLUGIN_DOCKERFILE:
+      Dockerfile.Build
+    PLUGIN_REPO:
+      vwxyzjn/portwarden-server-prod
+    PLUGIN_TARGET:
+      production
+    PLUGIN_AUTO_TAG:
+      true
+    PLUGIN_USERNAME:
+      from_secret: docker_username
+    PLUGIN_PASSWORD:
+      from_secret: docker_password
+    PLUGIN_BUILD_ARGS:
+      Salt=$Salt
