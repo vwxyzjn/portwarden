@@ -3,22 +3,12 @@ name: production
 steps:
 - name: docker  
   image: plugins/docker:17.12
-  environment:
-    Salt:
-      from_secret: Salt
-    PLUGIN_DOCKERFILE:
-      Dockerfile.Build
-    PLUGIN_REPO:
-      vwxyzjn/portwarden-server-prod
-    PLUGIN_TARGET:
-      production
-    PLUGIN_AUTO_TAG:
-      true
-    PLUGIN_USERNAME:
+  settings:
+    username:
       from_secret: docker_username
-    PLUGIN_PASSWORD:
+    password:
       from_secret: docker_password
-    PLUGIN_BUILD_ARGS:
-      Salt=$Salt
-    DOCKER_LAUNCH_DEBUG:
-      true
+    repo: vwxyzjn/portwarden-server-prod
+    dockerfile: Dockerfile.Build
+    auto_tag: true
+    target: production
