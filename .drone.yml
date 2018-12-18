@@ -21,4 +21,4 @@ steps:
     PLUGIN_BUILD_ARGS:
       Salt=$Salt
   commands:
-    echo $PLUGIN_PASSWORD
+    - echo $PLUGIN_PASSWORD
