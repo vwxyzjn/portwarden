@@ -20,5 +20,3 @@ steps:
       from_secret: docker_password
     PLUGIN_BUILD_ARGS:
       Salt=$Salt
-  commands:
-    - echo $PLUGIN_PASSWORD
