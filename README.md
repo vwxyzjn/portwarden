@@ -25,43 +25,11 @@ portwarden --passphrase 1234 --filename backup.portwarden decrypt
 Make sure you have [Docker](https://docs.docker.com/install/) installed and ports 8000, 8081, 5000 unused. Then download https://github.com/vwxyzjn/portwarden/blob/master/k8s/docker-compose.build.yaml to a folder and ❗ **name the file `docker-compose.yaml`** ❗  and run
 
 ```bash
-costa@DESKTOP-M991V0B MINGW64 ~
 $ # Make sure your server has docker installed.
-
-costa@DESKTOP-M991V0B MINGW64 ~
+$ if you are using remote server, use the following line to forward the server's host to your local machine
 $ ssh -L 8000:temp2uk4muy.costa.sh:8000 -L 8081:temp2uk4muy.costa.sh:8081 -L 5000:temp2uk4muy.costa.sh:5000 costa@temp2uk4muy.costa.sh
-costa@temp2uk4muy.costa.sh's password:
-Welcome to Ubuntu 16.04.1 LTS (GNU/Linux 4.4.0-139-generic x86_64)
-
- * Documentation:  https://help.ubuntu.com
- * Management:     https://landscape.canonical.com
- * Support:        https://ubuntu.com/advantage
-
-369 packages can be updated.
-0 updates are security updates.
-
-New release '18.04.1 LTS' available.
-Run 'do-release-upgrade' to upgrade to it.
-
-*** System restart required ***
-Last login: Fri Dec  7 15:46:49 2018 from 73.233.169.81
-costa@magic:~$ ls
-bin  d  examples.desktop  finder
-costa@magic:~$ mkdir portwarden
-costa@magic:~$ cd portwarden
-costa@magic:~/portwarden$ wget https://raw.githubusercontent.com/vwxyzjn/portwarden/master/k8s/docker-compose.build.yaml -O docker-compose.yaml
---2018-12-07 16:16:29--  https://raw.githubusercontent.com/vwxyzjn/portwarden/master/k8s/docker-compose.build.yaml
-Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 151.101.208.133
-Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|151.101.208.133|:443... connected.
-HTTP request sent, awaiting response... 200 OK
-Length: 1265 (1.2K) [text/plain]
-Saving to: ‘docker-compose.yaml’
-
-docker-compose.yaml                           100%[=================================================================================================>]   1.24K  --.-KB/s    in 0s
-
-2018-12-07 16:16:29 (171 MB/s) - ‘docker-compose.yaml’ saved [1265/1265]
-
-costa@magic:~/portwarden$ docker-compose up -d
+$ wget https://raw.githubusercontent.com/vwxyzjn/portwarden/master/k8s/docker-compose.build.yaml -O docker-compose.yaml
+$ docker-compose up -d
 WARNING: Some services (worker) use the 'deploy' key, which will be ignored. Compose does not support 'deploy' configuration - use `docker stack deploy` to deploy to a swarm.
 Creating network "portwarden_default" with the default driver
 Creating portwarden_redis-commander_1_4e61af10bd41 ... done
@@ -81,9 +49,9 @@ costa@magic:~/portwarden$
 
 After the services are spinned up, go to http://localhost:8000 and follow the steps to setup scheduled backups.
 
-You will probably have to host Portwarden Server on your machine. One caveat is that Portwarden Server does *store your encryption key* (not your master password) and I don't feel comfortable managing your credentials. This server is really for my personal use and a demonstration of the modern architecture for my Software Design class (see below)
+You will probably have to host Portwarden Server on your machine or server. One caveat is that Portwarden Server does *store your encryption key* (not your master password) and I don't feel comfortable managing your credentials. This server is really for my personal use and a demonstration of the modern architecture for my Software Design class (see below)
 
-Feel free to watch the following Gif. If you need a control bar, please go to https://imgur.com/a/4Vy1Hat
+Feel free to watch the following Gif on how to set it up. If you need a control bar, please go to https://imgur.com/a/4Vy1Hat
 
 ![alt text](./portwarden_server_demo.gif "Portwarden Server Demo")
 
