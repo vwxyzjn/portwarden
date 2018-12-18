@@ -2,10 +2,10 @@ kind: pipeline
 name: production
 steps:
 - name: docker  
-  image: plugins/docker:17.12
+  image: plugins/docker:17.10
   environment:
-    # Salt:
-    #   from_secret: Salt
+    Salt:
+      from_secret: Salt
     PLUGIN_DOCKERFILE:
       Dockerfile.Build
     PLUGIN_REPO:
@@ -18,7 +18,7 @@ steps:
       from_secret: docker_username
     PLUGIN_PASSWORD:
       from_secret: docker_password
-    # PLUGIN_BUILD_ARGS:
-    #   Salt=$Salt
-    DOCKER_LAUNCH_DEBUG:
+    PLUGIN_BUILD_ARGS:
+      Salt=$Salt
+    PLUGIN_DEBUG:
       true
