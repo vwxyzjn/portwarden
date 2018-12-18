@@ -26,7 +26,7 @@ Make sure you have [Docker](https://docs.docker.com/install/) installed and port
 
 ```bash
 $ # Make sure your server has docker installed.
-$ if you are using remote server, use the following line to forward the server's host to your local machine
+$ # if you are using remote server, use the following line to forward the server's host to your local machine
 $ ssh -L 8000:temp2uk4muy.costa.sh:8000 -L 8081:temp2uk4muy.costa.sh:8081 -L 5000:temp2uk4muy.costa.sh:5000 costa@temp2uk4muy.costa.sh
 $ wget https://raw.githubusercontent.com/vwxyzjn/portwarden/master/k8s/docker-compose.build.yaml -O docker-compose.yaml
 $ docker-compose up -d
@@ -37,14 +37,13 @@ Creating portwarden_frontend_1_8671b96c9489        ... done
 Creating portwarden_redis_1_63f811026265           ... done
 Creating portwarden_scheduler_1_f506c63e5915       ... done
 Creating portwarden_worker_1_37de363b0d28          ... done
-costa@magic:~/portwarden$ docker ps
+$ docker ps
 CONTAINER ID        IMAGE                                   COMMAND                  CREATED             STATUS              PORTS                    NAMES
 188bfb9d4eba        vwxyzjn/portwarden-server-prod:1.7.1    "./scheduler"            11 seconds ago      Up 8 seconds        0.0.0.0:5000->5000/tcp   portwarden_scheduler_1_127af4e9821a
 9cb2a5221b2b        vwxyzjn/portwarden-server-prod:1.7.1    "./worker"               11 seconds ago      Up 9 seconds        5000/tcp                 portwarden_worker_1_1a0247e3be8f
 c6967ada50c6        redis                                   "docker-entrypoint..."   13 seconds ago      Up 11 seconds       6379/tcp                 portwarden_redis_1_14ee2e0a7e97
 472d6d2e7f60        vwxyzjn/portwarden-frontend:1.2.0       "yarn start"             13 seconds ago      Up 11 seconds       0.0.0.0:8000->8000/tcp   portwarden_frontend_1_55788d316890
 ddfbc57a74a0        rediscommander/redis-commander:latest   "/usr/bin/dumb-ini..."   13 seconds ago      Up 11 seconds       0.0.0.0:8081->8081/tcp   portwarden_redis-commander_1_1a656d418a10
-costa@magic:~/portwarden$ 
 ```
 
 After the services are spinned up, go to http://localhost:8000 and follow the steps to setup scheduled backups.
