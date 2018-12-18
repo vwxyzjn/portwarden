@@ -15,5 +15,5 @@ steps:
     salt:
       from_secret: Salt
     build_args:
-      - Salt=$PLUGIN_SALT
+      - Salt=
     debug: true
