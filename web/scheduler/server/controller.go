@@ -73,8 +73,13 @@ func CancelEncryptBackupHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrGettingPortwardenUser})
 		return
 	}
-	opu.BackupSetting = pu.BackupSetting
-	if err := opu.Set(); err != nil {
+	// Clean up users
+	pu.BitwardenDataJSON = []byte{}
+	pu.GoogleToken = &oauth2.Token{}
+	pu.BitwardenSessionKey = ""
+	pu.GoogleUserInfo = GoogleUserInfo{}
+	pu.BackupSetting.WillSetupBackup = false
+	if err := pu.Set(); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": ErrCreatingPortwardenUser})
 		return
 	}
