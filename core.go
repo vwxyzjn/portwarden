@@ -55,7 +55,7 @@ type LoginCredentials struct {
 
 func CreateBackupBytesUsingBitwardenLocalJSON(dataJson []byte, BITWARDENCLI_APPDATA_DIR, passphrase, sessionKey string, sleepMilliseconds int) ([]byte, error) {
 	// Put data.json in the BITWARDENCLI_APPDATA_DIR
-	defer BWLogout()
+	defer BWDelete(BITWARDENCLI_APPDATA_DIR)
 	if err := ioutil.WriteFile(filepath.Join(BITWARDENCLI_APPDATA_DIR, "data.json"), dataJson, 0644); err != nil {
 		return nil, err
 	}
@@ -208,11 +208,11 @@ func BWLoginGetSessionKey(lc *LoginCredentials) (string, error) {
 }
 
 func BWLoginGetSessionKeyAndDataJSON(lc *LoginCredentials, BITWARDENCLI_APPDATA_DIR string) (string, []byte, error) {
-	defer BWLogout()
 	sessionKey, err := BWLoginGetSessionKey(lc)
 	if err != nil {
 		return "", nil, err
 	}
+	defer BWDelete(BITWARDENCLI_APPDATA_DIR)
 	dataJSONPath := filepath.Join(BITWARDENCLI_APPDATA_DIR, "data.json")
 	dat, err := ioutil.ReadFile(dataJSONPath)
 	if err != nil {
@@ -228,4 +228,13 @@ func BWLoginGetSessionKeyAndDataJSON(lc *LoginCredentials, BITWARDENCLI_APPDATA_
 func BWLogout() error {
 	cmd := exec.Command("bw", "logout")
 	return cmd.Run()
+}
+
+func BWDelete(BITWARDENCLI_APPDATA_DIR string) error {
+	dataJSONPath := filepath.Join(BITWARDENCLI_APPDATA_DIR, "data.json")
+	err := os.Remove(dataJSONPath)
+	if err != nil {
+		return err
+	}
+	return nil
 }
