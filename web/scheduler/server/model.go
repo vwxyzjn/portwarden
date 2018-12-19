@@ -1,6 +1,7 @@
 package server
 
 import (
+	b64 "encoding/base64"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -113,6 +114,13 @@ func (pu *PortwardenUser) SetupAutomaticBackup(eta *time.Time) error {
 }
 
 func (pu *PortwardenUser) Set() error {
+	// Encrypt the passphrase
+	encryptedPassphraseBytes, err := portwarden.EncryptBytes([]byte(pu.BackupSetting.Passphrase), portwarden.Salt)
+	if err != nil {
+		return err
+	}
+	pu.BackupSetting.Passphrase = b64.StdEncoding.EncodeToString(encryptedPassphraseBytes)
+	// Clear bitwarden login credentials so we don't store them
 	pu.BitwardenLoginCredentials = &portwarden.LoginCredentials{}
 	puJson, err := json.Marshal(pu)
 	if err != nil {
@@ -120,7 +128,7 @@ func (pu *PortwardenUser) Set() error {
 	}
 	err = web.RedisClient.Set(pu.Email, string(puJson), 0).Err()
 	if err != nil {
-		panic(err)
+		return err
 	}
 	return nil
 }
@@ -133,6 +141,16 @@ func (pu *PortwardenUser) Get() error {
 	if err := json.Unmarshal([]byte(val), &pu); err != nil {
 		return err
 	}
+	// Decrypt the passphrase
+	encryptedPassphraseBytes, err := b64.StdEncoding.DecodeString(pu.BackupSetting.Passphrase)
+	if err != nil {
+		return err
+	}
+	decryptedPassphraseBytes, err := portwarden.DecryptBytes(encryptedPassphraseBytes, portwarden.Salt)
+	if err != nil {
+		return err
+	}
+	pu.BackupSetting.Passphrase = string(decryptedPassphraseBytes)
 	return nil
 }
 
