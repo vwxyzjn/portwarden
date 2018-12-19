@@ -10,10 +10,13 @@ steps:
       from_secret: docker_password
     repo: vwxyzjn/portwarden-server-prod
     dockerfile: Dockerfile.Build
-    auto_tag: true
     target: production
     salt:
       from_secret: Salt
     build_args:
       - Salt=$PLUGIN_SALT
     debug: true
+    tags:
+      - latest
+      - '0.1.2'
+    auto_tag: true
