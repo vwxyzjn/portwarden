@@ -15,8 +15,4 @@ steps:
       from_secret: Salt
     build_args:
       - Salt=$PLUGIN_SALT
-    debug: true
-    tags:
-      - latest
-      - '0.1.2'
     auto_tag: true
