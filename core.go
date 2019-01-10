@@ -62,8 +62,11 @@ func CreateBackupBytesUsingBitwardenLocalJSON(dataJson []byte, BITWARDENCLI_APPD
 	return CreateBackupBytes(passphrase, sessionKey, sleepMilliseconds)
 }
 
-func CreateBackupFile(fileName, passphrase, sessionKey string, sleepMilliseconds int) error {
-	defer BWLogout()
+func CreateBackupFile(fileName, passphrase, sessionKey string, sleepMilliseconds int, noLogout bool) error {
+	if !noLogout {
+		fmt.Println("true")
+		defer BWLogout()
+	}
 	if !strings.HasSuffix(fileName, ".portwarden") {
 		fileName += ".portwarden"
 	}
