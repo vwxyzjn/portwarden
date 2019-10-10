@@ -11,7 +11,7 @@ It addresses this issue in the community forum https://community.bitwarden.com/t
 
 ## Usage Of Portwarden CLI
 
-Go to https://github.com/bitwarden/cli/releases to download the latest version of Bitwarden CLI and place the executable `bw`/`bw.exe` in your `PATH`. Then, go to https://github.com/vwxyzjn/portwarden/releases/ to downlaod the latest release of `portwarden`. Now just follow the steps in the following Gif:
+Go to https://github.com/bitwarden/cli/releases to download the latest version of Bitwarden CLI and place the executable `bw`/`bw.exe` in your `PATH`. Then, go to https://github.com/vwxyzjn/portwarden/releases/ to download the latest release of `portwarden`. Now just follow the steps in the following Gif:
 
 ![alt text](./portwarden_cli_demo.gif "Portwarden CLI Demo")
 
