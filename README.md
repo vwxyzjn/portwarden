@@ -18,6 +18,7 @@ Go to https://github.com/bitwarden/cli/releases to download the latest version o
 ```bash
 portwarden --passphrase 1234 --filename backup.portwarden encrypt
 portwarden --passphrase 1234 --filename backup.portwarden decrypt
+portwarden --passphrase 1234 --filename backup.portwarden restore
 ```
 
 ## Usage of Portwarden Server (Setup Scheduled Backup)
