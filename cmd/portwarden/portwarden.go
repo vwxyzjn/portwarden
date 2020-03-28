@@ -70,7 +70,6 @@ func main() {
 				}
 				err := EncryptBackupController(filename, passphrase)
 				if err != nil {
-					fmt.Println("encryption failed: " + err.Error())
 					return err
 				}
 				fmt.Println("encrypted export successful")
@@ -90,10 +89,28 @@ func main() {
 				}
 				err := DecryptBackupController(filename, passphrase)
 				if err != nil {
-					fmt.Println("encryption failed: " + err.Error())
 					return err
 				}
 				fmt.Println("decryption successful")
+				return nil
+			},
+		},
+		{
+			Name:    "restore",
+			Aliases: []string{"d"},
+			Usage:   "restore a `.portwarden` backgup to a Bitwarden Account",
+			Action: func(c *cli.Context) error {
+				if len(passphrase) == 0 {
+					return errors.New(ErrNoPhassPhraseProvided)
+				}
+				if len(filename) == 0 {
+					return errors.New(ErrNoFilenameProvided)
+				}
+				err := RestoreBackupController(filename, passphrase)
+				if err != nil {
+					return err
+				}
+				fmt.Println("restore successful")
 				return nil
 			},
 		},
@@ -119,6 +136,22 @@ func EncryptBackupController(fileName, passphrase string) error {
 
 func DecryptBackupController(fileName, passphrase string) error {
 	return portwarden.DecryptBackupFile(fileName, passphrase)
+}
+
+func RestoreBackupController(fileName, passphrase string) error {
+	var err error
+	var sessionKey string
+	err = portwarden.BWLogout()
+	if err != nil {
+		if err.Error() != portwarden.BWErrNotLoggedIn {
+			return err
+		}
+	}
+	sessionKey, err = BWGetSessionKey()
+	if err != nil {
+		return err
+	}
+	return portwarden.RestoreBackupFile(fileName, passphrase, sessionKey, sleepMilliseconds, noLogout)
 }
 
 func BWGetSessionKey() (string, error) {

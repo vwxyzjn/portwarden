@@ -4,22 +4,23 @@ package portwarden
 type PortWarden []PortWardenElement
 
 type PortWardenElement struct {
-	Object          Object                 `json:"object"`
-	ID              string                 `json:"id"`
-	OrganizationID  interface{}            `json:"organizationId"`
-	FolderID        *string                `json:"folderId"`
-	Type            int64                  `json:"type"`
-	Name            string                 `json:"name"`
-	Notes           *string                `json:"notes"`
-	Favorite        bool                   `json:"favorite"`
-	Login           *Login                 `json:"login,omitempty"`
-	RevisionDate    string                 `json:"revisionDate"`
-	SecureNote      *SecureNote            `json:"secureNote,omitempty"`
-	Attachments     []Attachment           `json:"attachments"`
-	PasswordHistory []PasswordHistory      `json:"passwordHistory"`
-	Fields          []Field                `json:"fields"`
-	Card            *Card                  `json:"card,omitempty"`
-	Identity        map[string]interface{} `json:"identity,omitempty"`
+	Object          Object            `json:"object"`
+	ID              string            `json:"id"`
+	OrganizationID  *string           `json:"organizationId"`
+	FolderID        *string           `json:"folderId"`
+	Type            int64             `json:"type"`
+	Name            string            `json:"name"`
+	Notes           *string           `json:"notes"`
+	Favorite        bool              `json:"favorite"`
+	SecureNote      *SecureNote       `json:"secureNote,omitempty"`
+	CollectionIDS   []string          `json:"collectionIds"`
+	Attachments     []Attachment      `json:"attachments"`
+	RevisionDate    string            `json:"revisionDate"`
+	Login           *Login            `json:"login,omitempty"`
+	PasswordHistory []PasswordHistory `json:"passwordHistory"`
+	Fields          []Field           `json:"fields"`
+	Card            *Card             `json:"card,omitempty"`
+	Identity        *Identity         `json:"identity,omitempty"`
 }
 
 type Attachment struct {
@@ -31,12 +32,12 @@ type Attachment struct {
 }
 
 type Card struct {
-	CardholderName string      `json:"cardholderName"`
-	Brand          string      `json:"brand"`
-	Number         string      `json:"number"`
-	ExpMonth       string      `json:"expMonth"`
-	ExpYear        string      `json:"expYear"`
-	Code           interface{} `json:"code"`
+	CardholderName string  `json:"cardholderName"`
+	Brand          string  `json:"brand"`
+	Number         string  `json:"number"`
+	ExpMonth       string  `json:"expMonth"`
+	ExpYear        string  `json:"expYear"`
+	Code           *string `json:"code"`
 }
 
 type Field struct {
@@ -45,12 +46,33 @@ type Field struct {
 	Type  int64   `json:"type"`
 }
 
+type Identity struct {
+	Title          interface{} `json:"title"`
+	FirstName      interface{} `json:"firstName"`
+	MiddleName     interface{} `json:"middleName"`
+	LastName       interface{} `json:"lastName"`
+	Address1       interface{} `json:"address1"`
+	Address2       interface{} `json:"address2"`
+	Address3       interface{} `json:"address3"`
+	City           interface{} `json:"city"`
+	State          interface{} `json:"state"`
+	PostalCode     interface{} `json:"postalCode"`
+	Country        interface{} `json:"country"`
+	Company        interface{} `json:"company"`
+	Email          interface{} `json:"email"`
+	Phone          interface{} `json:"phone"`
+	Ssn            interface{} `json:"ssn"`
+	Username       interface{} `json:"username"`
+	PassportNumber interface{} `json:"passportNumber"`
+	LicenseNumber  interface{} `json:"licenseNumber"`
+}
+
 type Login struct {
-	Username             *string     `json:"username"`
-	Password             *string     `json:"password"`
-	Totp                 interface{} `json:"totp"`
-	PasswordRevisionDate *string     `json:"passwordRevisionDate"`
-	Uris                 []Uris      `json:"uris"`
+	Uris                 []Uris  `json:"uris"`
+	Username             *string `json:"username"`
+	Password             *string `json:"password"`
+	Totp                 *string `json:"totp"`
+	PasswordRevisionDate *string `json:"passwordRevisionDate"`
 }
 
 type Uris struct {
@@ -71,4 +93,16 @@ type Object string
 
 const (
 	Item Object = "item"
+)
+
+type PortWardenFolder []PortWardenFolderElement
+
+type PortWardenFolderElement struct {
+	Object Object  `json:"object"`
+	ID     *string `json:"id"`
+	Name   string  `json:"name"`
+}
+
+const (
+	Folder Object = "folder"
 )

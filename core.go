@@ -1,11 +1,13 @@
 package portwarden
 
 import (
+	"archive/zip"
 	"bufio"
 	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -15,6 +17,7 @@ import (
 	"strings"
 	"time"
 
+	b64 "encoding/base64"
 	"github.com/davecgh/go-spew/spew"
 
 	"github.com/mholt/archiver"
@@ -27,6 +30,7 @@ const (
 	ErrNoPhassPhraseProvided      = "no passphrase provided"
 	ErrNoFilenameProvided         = "no filename provided"
 	ErrSessionKeyExtractionFailed = "session key extraction failed"
+	ErrVaultNotEmptyForRestore    = "account's valut not empty! you have to restore the backup to an empty Bitwarden account"
 
 	BWErrNotLoggedIn           = "You are not logged in."
 	BWErrInvalidMasterPassword = "Invalid master password."
@@ -37,6 +41,9 @@ const (
 	LoginCredentialMethodAuthenticator = 0
 	LoginCredentialMethodEmail         = 1
 	LoginCredentialMethodYubikey       = 3
+
+	ItemsJsonFileName   = "items.json"
+	FoldersJSONFileName = "folders.json"
 )
 
 // LoginCredentials is used to login to the `bw` cli. See documentation
@@ -64,7 +71,6 @@ func CreateBackupBytesUsingBitwardenLocalJSON(dataJson []byte, BITWARDENCLI_APPD
 
 func CreateBackupFile(fileName, passphrase, sessionKey string, sleepMilliseconds int, noLogout bool) error {
 	if !noLogout {
-		fmt.Println("true")
 		defer BWLogout()
 	}
 	if !strings.HasSuffix(fileName, ".portwarden") {
@@ -89,23 +95,33 @@ func CreateBackupBytes(passphrase, sessionKey string, sleepMilliseconds int) ([]
 	}
 	defer os.RemoveAll(BackupFolderName)
 
-	pwes := []PortWardenElement{}
-
-	rawByte, err := BWListItemsRawBytes(sessionKey)
+	// save formmated json to FoldersJSONFileName
+	rawByte, err := BWListFoldersRawBytes(sessionKey)
 	if err != nil {
 		return nil, err
 	}
+	formattedByte := pretty.Pretty(rawByte)
+	if err := ioutil.WriteFile(BackupFolderName+FoldersJSONFileName, formattedByte, 0644); err != nil {
+		return nil, err
+	}
+
+	// save formmated json to ItemsJsonFileName
+	rawByte, err = BWListItemsRawBytes(sessionKey)
+	if err != nil {
+		return nil, err
+	}
+	formattedByte = pretty.Pretty(rawByte)
+	if err := ioutil.WriteFile(BackupFolderName+ItemsJsonFileName, formattedByte, 0644); err != nil {
+		return nil, err
+	}
+
+	// download attachments
+	pwes := []PortWardenElement{}
 	if err := json.Unmarshal(rawByte, &pwes); err != nil {
 		return nil, err
 	}
 	err = BWGetAllAttachments(BackupFolderName, sessionKey, pwes, sleepMilliseconds)
 	if err != nil {
-		return nil, err
-	}
-
-	// save formmated json to "main.json"
-	formattedByte := pretty.Pretty(rawByte)
-	if err := ioutil.WriteFile(BackupFolderName+"main.json", formattedByte, 0644); err != nil {
 		return nil, err
 	}
 
@@ -142,6 +158,142 @@ func DecryptBackupFile(fileName, passphrase string) error {
 	return nil
 }
 
+func RestoreBackupFile(fileName, passphrase, sessionKey string, sleepMilliseconds int, noLogout bool) error {
+	// dummy check if the account is not empty, don't restore
+	var err error
+	var rawByte []byte
+
+	var file []byte
+	err = DecryptBackupFile(fileName, passphrase)
+	if err != nil {
+		return err
+	}
+	err = Unzip(fileName+".decrypted"+".zip", "")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(BackupFolderName)
+	defer os.Remove(fileName + ".decrypted" + ".zip")
+
+	rawByte, err = BWListItemsRawBytes(sessionKey)
+	if err != nil {
+		return err
+	}
+	pwes := []PortWardenElement{}
+	if err := json.Unmarshal(rawByte, &pwes); err != nil {
+		return err
+	}
+	if len(pwes) != 0 {
+		return errors.New(ErrVaultNotEmptyForRestore)
+	}
+
+	// restore folders
+	if file, err = ioutil.ReadFile(BackupFolderName + FoldersJSONFileName); err != nil {
+		return err
+	}
+	folderData := PortWardenFolder{}
+	err = json.Unmarshal([]byte(file), &folderData)
+	if err != nil {
+		return err
+	}
+	oldToNewFolderID := make(map[string]string)
+	var itemBytes []byte
+	for _, item := range folderData {
+		time.Sleep(time.Millisecond * time.Duration(sleepMilliseconds))
+		if item.ID != nil {
+			itemBytes, err = json.Marshal(item)
+			cmd := exec.Command("bw", "create", "folder", "--session", sessionKey, b64.StdEncoding.EncodeToString(itemBytes))
+			var stdout bytes.Buffer
+			var stderr bytes.Buffer
+			cmd.Stdout = &stdout
+			cmd.Stderr = &stderr
+			cmd.Stdin = os.Stdin
+			if err := cmd.Run(); err != nil {
+				fmt.Println("An error occured: ", err)
+				spew.Dump(stdout, stderr)
+			}
+			fmt.Println("restoring folder", item.Name)
+			newItem := PortWardenFolderElement{}
+			err = json.Unmarshal(stdout.Bytes(), &newItem)
+			if err != nil {
+				return err
+			}
+			oldToNewFolderID[*item.ID] = *newItem.ID
+		}
+	}
+
+	// restore items
+	if file, err = ioutil.ReadFile(BackupFolderName + ItemsJsonFileName); err != nil {
+		return err
+	}
+	itemData := PortWarden{}
+	err = json.Unmarshal([]byte(file), &itemData)
+	if err != nil {
+		return err
+	}
+	oldToNewItemID := make(map[string]string)
+	for _, item := range itemData {
+		time.Sleep(time.Millisecond * time.Duration(sleepMilliseconds))
+		// deal with attachments separately
+		item.Attachments = nil
+		if item.FolderID != nil {
+			*item.FolderID = oldToNewFolderID[*item.FolderID]
+		}
+		item.OrganizationID = nil
+		item.CollectionIDS = nil
+
+		itemBytes, err = json.Marshal(item)
+		cmd := exec.Command("bw", "create", "item", "--session", sessionKey, b64.StdEncoding.EncodeToString(itemBytes))
+		var stdout bytes.Buffer
+		var stderr bytes.Buffer
+		cmd.Stdout = &stdout
+		cmd.Stderr = &stderr
+		cmd.Stdin = os.Stdin
+		if err := cmd.Run(); err != nil {
+			fmt.Println("An error occured: ", err)
+			spew.Dump(stdout, stderr)
+		}
+		fmt.Println("restoring item", item.Name)
+		newItem := PortWardenElement{}
+		err = json.Unmarshal(stdout.Bytes(), &newItem)
+		if err != nil {
+			return err
+		}
+		oldToNewItemID[item.ID] = newItem.ID
+	}
+	fmt.Println("restoring item finished")
+
+	// restore item's attachments
+	if file, err = ioutil.ReadFile(BackupFolderName + ItemsJsonFileName); err != nil {
+		return err
+	}
+	itemData = PortWarden{}
+	err = json.Unmarshal([]byte(file), &itemData)
+	if err != nil {
+		return err
+	}
+	for _, item := range itemData {
+		if len(item.Attachments) > 0 {
+			time.Sleep(time.Millisecond * time.Duration(sleepMilliseconds))
+			for _, innerItem := range item.Attachments {
+				itemBytes, err = json.Marshal(item)
+				cmd := exec.Command("bw", "create", "attachment", "--itemid", oldToNewItemID[item.ID], "--session", sessionKey, "--file", BackupFolderName+item.Name+"/"+innerItem.FileName)
+				var stdout bytes.Buffer
+				var stderr bytes.Buffer
+				cmd.Stdout = &stdout
+				cmd.Stderr = &stderr
+				cmd.Stdin = os.Stdin
+				if err := cmd.Run(); err != nil {
+					fmt.Println("An error occured: ", err)
+					spew.Dump(stdout, stderr)
+				}
+				fmt.Println("restoring item's attachment", item.Name, innerItem.FileName)
+			}
+		}
+	}
+	return nil
+}
+
 func ExtractSessionKey(stdout string) (string, error) {
 	r := regexp.MustCompile(`BW_SESSION=".+"`)
 	matches := r.FindAllString(stdout, 1)
@@ -157,6 +309,19 @@ func ExtractSessionKey(stdout string) (string, error) {
 func BWListItemsRawBytes(sessionKey string) ([]byte, error) {
 	var stdout, stderr bytes.Buffer
 	cmd := exec.Command("bw", "list", "items", "--session", sessionKey)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	if err != nil {
+		return nil, err
+	}
+	return stdout.Bytes(), nil
+}
+
+func BWListFoldersRawBytes(sessionKey string) ([]byte, error) {
+	var stdout, stderr bytes.Buffer
+	cmd := exec.Command("bw", "list", "folders", "--session", sessionKey)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -229,8 +394,16 @@ func BWLoginGetSessionKeyAndDataJSON(lc *LoginCredentials, BITWARDENCLI_APPDATA_
 }
 
 func BWLogout() error {
+	var stdout, stderr bytes.Buffer
 	cmd := exec.Command("bw", "logout")
-	return cmd.Run()
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	if err != nil {
+		return errors.New(string(stderr.Bytes()))
+	}
+	return nil
 }
 
 func BWDelete(BITWARDENCLI_APPDATA_DIR string) error {
@@ -239,5 +412,64 @@ func BWDelete(BITWARDENCLI_APPDATA_DIR string) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func Unzip(src, dest string) error {
+	r, err := zip.OpenReader(src)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := r.Close(); err != nil {
+			panic(err)
+		}
+	}()
+
+	os.MkdirAll(dest, 0755)
+
+	// Closure to address file descriptors issue with all the deferred .Close() methods
+	extractAndWriteFile := func(f *zip.File) error {
+		rc, err := f.Open()
+		if err != nil {
+			return err
+		}
+		defer func() {
+			if err := rc.Close(); err != nil {
+				panic(err)
+			}
+		}()
+
+		path := filepath.Join(dest, f.Name)
+
+		if f.FileInfo().IsDir() {
+			os.MkdirAll(path, f.Mode())
+		} else {
+			os.MkdirAll(filepath.Dir(path), f.Mode())
+			f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+			if err != nil {
+				return err
+			}
+			defer func() {
+				if err := f.Close(); err != nil {
+					panic(err)
+				}
+			}()
+
+			_, err = io.Copy(f, rc)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	for _, f := range r.File {
+		err := extractAndWriteFile(f)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }

@@ -3,3 +3,4 @@ vendor/*
 **/*.portwarden
 **/*.decrypted.zip
 salt.go
+portwarden_backup/*
