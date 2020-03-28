@@ -25,6 +25,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.3.0
 	github.com/mattn/go-isatty v0.0.4
 	github.com/mholt/archiver v2.1.0+incompatible
+	github.com/mitchellh/gox v1.0.1 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
 	github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742
 	github.com/nwaples/rardecode v1.0.0

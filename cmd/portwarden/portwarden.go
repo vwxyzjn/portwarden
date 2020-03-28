@@ -35,6 +35,8 @@ var (
 func main() {
 	app := cli.NewApp()
 
+	app.Version = "1.0.0"
+
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:        "passphrase",

@@ -1,59 +1,47 @@
 # PortWarden
 
 
-[![Build Status](https://dev.costa.sh/api/badges/vwxyzjn/portwarden/status.svg)](https://dev.costa.sh/vwxyzjn/portwarden)
-
-
 This project creates encrypted backups for [Bitwarden](https://bitwarden.com/) vaults including attachments. It pulls your vault items from [Bitwarden CLI](https://github.com/bitwarden/cli) and download all the attachments associated with those items to a temporary backup folder. Then, portwarden zip that folder, encrypt it with a passphrase, and delete the temporary folder. 
 
 
 It addresses this issue in the community forum https://community.bitwarden.com/t/encrypted-export/235, but hopefully Bitwarden will come up with official solutions soon.
 
+## 3/28/20 Update
+
+We now support restoring the backup to an empty account, including attachments.
+
 ## Usage Of Portwarden CLI
 
-Go to https://github.com/bitwarden/cli/releases to download the latest version of Bitwarden CLI and place the executable `bw`/`bw.exe` in your `PATH`. Then, go to https://github.com/vwxyzjn/portwarden/releases/ to download the latest release of `portwarden`. Now just follow the steps in the following Gif:
+Go to https://github.com/bitwarden/cli/releases to download the latest version of Bitwarden CLI and place the executable `bw`/`bw.exe` in your `PATH`. Then, go to https://github.com/vwxyzjn/portwarden/releases/ to download the latest release of `portwarden`. Now just follow these steps :
 
-![alt text](./portwarden_cli_demo.gif "Portwarden CLI Demo")
 
 ```bash
 portwarden --passphrase 1234 --filename backup.portwarden encrypt
 portwarden --passphrase 1234 --filename backup.portwarden decrypt
+# RESTORE IS EXPERIMENTAL!! YOU MAY LOSE YOUR DATA
+# IF YOU RESTORE TO YOUR MAIN ACCOUNT
+# PLEASE MAKE SURE YOU KNOW WHAT YOU ARE DOING
+
+# Please use a **spare** account for restoring backup
+# Portwarden doesn't handle conflicts therefore a
+# separate account is needed
+
+# In fact we setup a check to make sure the account your
+# are restoring to does not have any data in it
 portwarden --passphrase 1234 --filename backup.portwarden restore
 ```
+### Demo Backup
 
-## Usage of Portwarden Server (Setup Scheduled Backup)
+![alt text](./imgs/backup.gif "Portwarden CLI Demo")
 
-Make sure you have [Docker](https://docs.docker.com/install/) installed and ports 8000, 8081, 5000 unused. Then download https://github.com/vwxyzjn/portwarden/blob/master/k8s/docker-compose.build.yaml to a folder and ❗ **name the file `docker-compose.yaml`** ❗  and run
+### Demo Decrypt
 
-```bash
-$ # Make sure your server has docker installed.
-$ # if you are using remote server, use the following line to forward the server's host to your local machine
-$ ssh -L 8000:temp2uk4muy.costa.sh:8000 -L 8081:temp2uk4muy.costa.sh:8081 -L 5000:temp2uk4muy.costa.sh:5000 costa@temp2uk4muy.costa.sh
-$ wget https://raw.githubusercontent.com/vwxyzjn/portwarden/master/k8s/docker-compose.build.yaml -O docker-compose.yaml
-$ docker-compose up -d
-WARNING: Some services (worker) use the 'deploy' key, which will be ignored. Compose does not support 'deploy' configuration - use `docker stack deploy` to deploy to a swarm.
-Creating network "portwarden_default" with the default driver
-Creating portwarden_redis-commander_1_4e61af10bd41 ... done
-Creating portwarden_frontend_1_8671b96c9489        ... done
-Creating portwarden_redis_1_63f811026265           ... done
-Creating portwarden_scheduler_1_f506c63e5915       ... done
-Creating portwarden_worker_1_37de363b0d28          ... done
-$ docker ps
-CONTAINER ID        IMAGE                                   COMMAND                  CREATED             STATUS              PORTS                    NAMES
-188bfb9d4eba        vwxyzjn/portwarden-server-prod:1.7.1    "./scheduler"            11 seconds ago      Up 8 seconds        0.0.0.0:5000->5000/tcp   portwarden_scheduler_1_127af4e9821a
-9cb2a5221b2b        vwxyzjn/portwarden-server-prod:1.7.1    "./worker"               11 seconds ago      Up 9 seconds        5000/tcp                 portwarden_worker_1_1a0247e3be8f
-c6967ada50c6        redis                                   "docker-entrypoint..."   13 seconds ago      Up 11 seconds       6379/tcp                 portwarden_redis_1_14ee2e0a7e97
-472d6d2e7f60        vwxyzjn/portwarden-frontend:1.2.0       "yarn start"             13 seconds ago      Up 11 seconds       0.0.0.0:8000->8000/tcp   portwarden_frontend_1_55788d316890
-ddfbc57a74a0        rediscommander/redis-commander:latest   "/usr/bin/dumb-ini..."   13 seconds ago      Up 11 seconds       0.0.0.0:8081->8081/tcp   portwarden_redis-commander_1_1a656d418a10
-```
+![alt text](./imgs/decrypt.gif "Portwarden CLI Demo")
 
-After the services are spinned up, go to http://localhost:8000 and follow the steps to setup scheduled backups.
+### Demo restore
 
-You will probably have to host Portwarden Server on your machine or server. One caveat is that Portwarden Server does *store your encryption key* (not your master password) and I don't feel comfortable managing your credentials. This server is really for my personal use and a demonstration of the modern architecture for my Software Design class (see below)
+![alt text](./imgs/restore.gif "Portwarden CLI Demo")
 
-Feel free to watch the following Gif on how to set it up. If you need a control bar, please go to https://imgur.com/a/4Vy1Hat
-
-![alt text](./portwarden_server_demo.gif "Portwarden Server Demo")
 
 ## Portwarden Compared with Official Bitwarden Backup (As of 12/5/2018)
 ||Portwarden|Official Bitwarden Backup|
@@ -61,7 +49,7 @@ Feel free to watch the following Gif on how to set it up. If you need a control 
 |Backend|golang|C#|
 |Backup Format|:heavy_check_mark: AES-Encrypted `.portwarden` format| Unencrypted CSV file|
 |Backup With Attachments|:heavy_check_mark:|Not supported (see [this feature request](https://community.bitwarden.com/t/allow-attachments-to-be-exported-when-using-export-data))
-|Scheduled Backup|:heavy_check_mark: Use Portwarden Server (Experimental)|Not supported|
+|Restore Attachments|:heavy_check_mark: Supported|Not supported|
 
 ## Contribution & Development
 
@@ -117,33 +105,3 @@ Notice the `docker-compose.yaml` file defines the services running and it's moun
 
 
 PRs are welcome. For ideas, you could probably add a progress bar to the CLI. 
-
-## Project Proposal for Software Design Course (SE-575) at Drexel University
-
-This section is experimental and for fun.
-
-I currently taking this class, and our final project is suppose to demonstrate some traits of the modern software architecture. So my teammate [Samridh Prasad](https://github.com/samridhprasad) and I figure we can probably add some components to Portwarden to make it more interesting. Couple initial deliverables are listed below:
-
-### Backend server
-- [x] Write a backend server by Go in the `portwarden/web` folder.
-- [x] Allow Bitwarden User to login and periodically back up their vault to Google Drive.
-- [x] If the user has attachments, download them in every 300 milliseconds because we don't want to get blacklisted. This means we probably want a queue (Maybe use Kafka?) as part of the architecture.
-- [ ] Use Let's encrypt to make the server use HTTPS protocal.
-
-
-### Frontend 
-- [x] Has a **simple** front end that gets user's username and password and show them if the backup process has begun.
-- [x] Allow the user to cancel such backup process if he/she wants. 
-
-### System Architecture
-We tried to avoid being boxed by a layered architecture and strived to conform to C4 standards best we could and ensured the code reflects the architecture. Overall, we found the lectures and assigned readings to greatly improve our ability to design scalable system architecture.
-#### Context Diagram
-Figure 1 maps out the basic systems involved with Portwarden and how they interact with each other.
-![alt text](./web/diagrams/context.png "Logo Title Text 1")
-#### Container Diagram
-Figure 2 provides a more in-depth view of the system breaking the system down into containers with arrows depicting the data flow.
-![alt text](./web/diagrams/container.png "Logo Title Text 2")
-#### Component Diagram
-Figure 3 drills down into the most critical containers: the Backend Scheduling Service and the Backend Backup/Worker Service. The boundaries for the containers are clearly marked to provide clarity to the reader. 
-![alt text](./web/diagrams/component.png "Logo Title Text 3")
-
