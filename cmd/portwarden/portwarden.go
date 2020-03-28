@@ -29,6 +29,7 @@ var (
 	passphrase        string
 	filename          string
 	sleepMilliseconds int
+	noLogout          bool
 )
 
 func main() {
@@ -50,6 +51,11 @@ func main() {
 			Usage:       "The number of milliseconds before making another request to download attachment",
 			Destination: &sleepMilliseconds,
 			Value:       300,
+		},
+		cli.BoolFlag{
+			Name:        "no-logout",
+			Usage:       "If set to true, then Portwarden won't log you out of the Bitwarden CLI",
+			Destination: &noLogout,
 		},
 	}
 
@@ -108,7 +114,7 @@ func EncryptBackupController(fileName, passphrase string) error {
 	if err != nil {
 		return err
 	}
-	return portwarden.CreateBackupFile(fileName, passphrase, sessionKey, sleepMilliseconds)
+	return portwarden.CreateBackupFile(fileName, passphrase, sessionKey, sleepMilliseconds, noLogout)
 }
 
 func DecryptBackupController(fileName, passphrase string) error {
