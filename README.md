@@ -10,6 +10,10 @@ It addresses this issue in the community forum https://community.bitwarden.com/t
 
 We now support restoring the backup to an empty account, including attachments.
 
+# Disclaimer
+Note that you **may lose your data** if you try the restore feature and I am not responsible. Use the free software at your own discretion.  Since we don't handle restoration conflicts,  **make sure to back up with your main account and restore to a spare/alternative account**. 
+
+
 ## Usage Of Portwarden CLI
 
 Go to https://github.com/bitwarden/cli/releases to download the latest version of Bitwarden CLI and place the executable `bw`/`bw.exe` in your `PATH`. Then, go to https://github.com/vwxyzjn/portwarden/releases/ to download the latest release of `portwarden`. Now just follow these steps :
