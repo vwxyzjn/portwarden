@@ -133,8 +133,9 @@ func BWGetSessionKey() (string, error) {
 func BWUnlockVaultToGetSessionKey() (string, error) {
 	cmd := exec.Command("bw", "unlock")
 	var stdout bytes.Buffer
+	var stderr bytes.Buffer
 	cmd.Stdout = &stdout
-	cmd.Stderr = os.Stderr
+	cmd.Stderr = &stderr
 	cmd.Stdin = os.Stdin
 
 	if err := cmd.Start(); err != nil {
@@ -143,7 +144,7 @@ func BWUnlockVaultToGetSessionKey() (string, error) {
 	cmd.Wait()
 	sessionKey, err := portwarden.ExtractSessionKey(stdout.String())
 	if err != nil {
-		return "", errors.New(string(stdout.Bytes()))
+		return "", errors.New(string(stderr.Bytes()))
 	}
 	return sessionKey, nil
 }
