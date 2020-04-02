@@ -24,6 +24,7 @@ Go to https://github.com/bitwarden/cli/releases to download the latest version o
 
 
 ```bash
+# If you are running self hosted instance, execute `bw config server https://MYSERVER.COM`
 portwarden --passphrase 1234 --filename backup.portwarden encrypt
 portwarden --passphrase 1234 --filename backup.portwarden decrypt
 # RESTORE IS EXPERIMENTAL!! YOU MAY LOSE YOUR DATA
