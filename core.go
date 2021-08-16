@@ -239,27 +239,30 @@ func RestoreBackupFile(fileName, passphrase, sessionKey string, sleepMillisecond
 		if item.FolderID != nil {
 			*item.FolderID = oldToNewFolderID[*item.FolderID]
 		}
-		item.OrganizationID = nil
-		item.CollectionIDS = nil
+		if item.OrganizationID == nil
+		{
+			// probably not needed
+			item.CollectionIDS = nil
 
-		itemBytes, err = json.Marshal(item)
-		cmd := exec.Command("bw", "create", "item", "--session", sessionKey, b64.StdEncoding.EncodeToString(itemBytes))
-		var stdout bytes.Buffer
-		var stderr bytes.Buffer
-		cmd.Stdout = &stdout
-		cmd.Stderr = &stderr
-		cmd.Stdin = os.Stdin
-		if err := cmd.Run(); err != nil {
-			fmt.Println("An error occured: ", err)
-			spew.Dump(stdout, stderr)
+			itemBytes, err = json.Marshal(item)
+			cmd := exec.Command("bw", "create", "item", "--session", sessionKey, b64.StdEncoding.EncodeToString(itemBytes))
+			var stdout bytes.Buffer
+			var stderr bytes.Buffer
+			cmd.Stdout = &stdout
+			cmd.Stderr = &stderr
+			cmd.Stdin = os.Stdin
+			if err := cmd.Run(); err != nil {
+				fmt.Println("An error occured: ", err)
+				spew.Dump(stdout, stderr)
+			}
+			fmt.Println("restoring item", item.Name)
+			newItem := PortWardenElement{}
+			err = json.Unmarshal(stdout.Bytes(), &newItem)
+			if err != nil {
+				return err
+			}
+			oldToNewItemID[item.ID] = newItem.ID
 		}
-		fmt.Println("restoring item", item.Name)
-		newItem := PortWardenElement{}
-		err = json.Unmarshal(stdout.Bytes(), &newItem)
-		if err != nil {
-			return err
-		}
-		oldToNewItemID[item.ID] = newItem.ID
 	}
 	fmt.Println("restoring item finished")
 
