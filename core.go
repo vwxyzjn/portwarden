@@ -239,8 +239,7 @@ func RestoreBackupFile(fileName, passphrase, sessionKey string, sleepMillisecond
 		if item.FolderID != nil {
 			*item.FolderID = oldToNewFolderID[*item.FolderID]
 		}
-		if item.OrganizationID == nil
-		{
+		if item.OrganizationID == nil {
 			// probably not needed
 			item.CollectionIDS = nil
 
