@@ -209,7 +209,7 @@ func RestoreBackupFile(fileName, passphrase, sessionKey string, sleepMillisecond
 			cmd.Stderr = &stderr
 			cmd.Stdin = os.Stdin
 			if err := cmd.Run(); err != nil {
-				fmt.Println("An error occured: ", err)
+				fmt.Println("An error occurred: ", err)
 				spew.Dump(stdout, stderr)
 			}
 			fmt.Println("restoring folder", item.Name)
@@ -250,7 +250,7 @@ func RestoreBackupFile(fileName, passphrase, sessionKey string, sleepMillisecond
 		cmd.Stderr = &stderr
 		cmd.Stdin = os.Stdin
 		if err := cmd.Run(); err != nil {
-			fmt.Println("An error occured: ", err)
+			fmt.Println("An error occurred: ", err)
 			spew.Dump(stdout, stderr)
 		}
 		fmt.Println("restoring item", item.Name)
@@ -284,7 +284,7 @@ func RestoreBackupFile(fileName, passphrase, sessionKey string, sleepMillisecond
 				cmd.Stderr = &stderr
 				cmd.Stdin = os.Stdin
 				if err := cmd.Run(); err != nil {
-					fmt.Println("An error occured: ", err)
+					fmt.Println("An error occurred: ", err)
 					spew.Dump(stdout, stderr)
 				}
 				fmt.Println("restoring item's attachment", item.Name, innerItem.FileName)

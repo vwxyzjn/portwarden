@@ -180,7 +180,7 @@ func BWUnlockVaultToGetSessionKey() (string, error) {
 	cmd.Stdin = os.Stdin
 
 	if err := cmd.Start(); err != nil {
-		fmt.Println("An error occured: ", err)
+		fmt.Println("An error occurred: ", err)
 	}
 	cmd.Wait()
 	sessionKey, err := portwarden.ExtractSessionKey(stdout.String())
