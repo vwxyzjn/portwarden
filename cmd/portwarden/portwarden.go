@@ -100,7 +100,7 @@ func main() {
 		{
 			Name:    "restore",
 			Aliases: []string{"d"},
-			Usage:   "restore a `.portwarden` backgup to a Bitwarden Account",
+			Usage:   "restore a `.portwarden` backup to a Bitwarden Account",
 			Action: func(c *cli.Context) error {
 				if len(passphrase) == 0 {
 					return errors.New(ErrNoPhassPhraseProvided)
