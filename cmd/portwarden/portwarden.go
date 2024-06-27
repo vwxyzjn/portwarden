@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -19,6 +20,7 @@ const (
 	ErrNoPhassPhraseProvided      = "no passphrase provided"
 	ErrNoFilenameProvided         = "no filename provided"
 	ErrSessionKeyExtractionFailed = "session key extraction failed"
+	ErrSessionKeyGetEnvFailed     = "no BW_SESSION found in environment variable"
 
 	BWErrInvalidMasterPassword = "Invalid master password."
 	BWEnterEmailAddress        = "? Email address:"
@@ -157,6 +159,14 @@ func RestoreBackupController(fileName, passphrase string) error {
 }
 
 func BWGetSessionKey() (string, error) {
+	if status, err := BWGetStatus(); err == nil {
+		if status.Status == "unlocked" {
+			if sessionKey, err := BWGetSessionKeyFromEnv(); err == nil {
+				return sessionKey, nil
+			}
+		}
+	}
+
 	sessionKey, err := BWUnlockVaultToGetSessionKey()
 	if err != nil {
 		if err.Error() == portwarden.BWErrNotLoggedIn {
@@ -204,6 +214,32 @@ func BWLoginGetSessionKey() (string, error) {
 	sessionKey, err := portwarden.ExtractSessionKey(stdout.String())
 	if err != nil {
 		return "", errors.New(string(stdout.Bytes()))
+	}
+	return sessionKey, nil
+}
+
+func BWGetStatus() (portwarden.Status, error) {
+	status := portwarden.Status{}
+
+	var cmd *exec.Cmd
+	cmd = exec.Command("bw", "status")
+	var stdout bytes.Buffer
+	cmd.Stdout = &stdout
+	if err := cmd.Run(); err != nil {
+		return status, err
+	}
+
+	if err := json.Unmarshal(stdout.Bytes(), &status); err != nil {
+		return status, err
+	}
+
+	return status, nil
+}
+
+func BWGetSessionKeyFromEnv() (string, error) {
+	sessionKey := os.Getenv("BW_SESSION")
+	if len(sessionKey) == 0 {
+		return "", errors.New(ErrSessionKeyGetEnvFailed)
 	}
 	return sessionKey, nil
 }

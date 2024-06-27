@@ -75,6 +75,14 @@ type Login struct {
 	PasswordRevisionDate *string `json:"passwordRevisionDate"`
 }
 
+type Status struct {
+	ServerUrl string `json:"serverUrl"`
+	LastSync  string `json:"lastSync"`
+	UserEmail string `json:"userEmail"`
+	UserId    string `json:"userId"`
+	Status    string `json:"status"`
+}
+
 type Uris struct {
 	Match interface{} `json:"match"`
 	URI   string      `json:"uri"`
