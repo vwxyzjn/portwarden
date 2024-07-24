@@ -157,15 +157,19 @@ func RestoreBackupController(fileName, passphrase string) error {
 }
 
 func BWGetSessionKey() (string, error) {
-	sessionKey, err := BWUnlockVaultToGetSessionKey()
-	if err != nil {
-		if err.Error() == portwarden.BWErrNotLoggedIn {
-			sessionKey, err = BWLoginGetSessionKey()
-			if err != nil {
+	var err error = nil
+	sessionKey := os.Getenv("BW_SESSION")
+	if sessionKey == "" {
+		sessionKey, err = BWUnlockVaultToGetSessionKey()
+		if err != nil {
+			if err.Error() == portwarden.BWErrNotLoggedIn {
+				sessionKey, err = BWLoginGetSessionKey()
+				if err != nil {
+					return "", err
+				}
+			} else {
 				return "", err
 			}
-		} else {
-			return "", err
 		}
 	}
 	return sessionKey, err

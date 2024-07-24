@@ -18,6 +18,7 @@ import (
 	"time"
 
 	b64 "encoding/base64"
+
 	"github.com/davecgh/go-spew/spew"
 
 	"github.com/mholt/archiver"
@@ -45,6 +46,8 @@ const (
 	ItemsJsonFileName   = "items.json"
 	FoldersJSONFileName = "folders.json"
 )
+
+var Salt string = os.Getenv("Salt")
 
 // LoginCredentials is used to login to the `bw` cli. See documentation
 // https://help.bitwarden.com/article/cli/
